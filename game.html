@@ -9,7 +9,7 @@
   </head>
   <body>
     <div id="game-container">
-      <canvas id="game-canvas" width="500" height="950"></canvas>
+      <canvas id="game-canvas"></canvas>
 
       <div id="ui-overlay" class="hidden">
         <span class="ui-text">SCORE: <span id="score">0</span></span>
@@ -49,60 +49,108 @@
           finalScoreLabel: "Final Score:",
           armorLabel: "ARMOR",
         },
+        // game settings (non-speed)
         game: {
           startLives: 10,
           startWave: 1,
           startScore: 0,
-          spawnIntervalBase: 300,
-          spawnIntervalMin: 120,
-          spawnIntervalDecayPerWave: 8,
+          spawnIntervalBase: 240,
+          spawnIntervalMin: 60,
+          spawnIntervalDecayPerWave: 12,
           waveInterval: 900,
           heavyEnemyChanceBase: 0.25,
           heavyEnemyChancePerWave: 0.02,
-          simpleEnemySpeedBase: 0.35,
-          simpleEnemySpeedRandom: 0.3,
-          simpleEnemySpeedPerWave: 0.02,
-          heavyEnemySpeedBase: 0.15,
-          heavyEnemySpeedRandom: 0.2,
           scoreSimple: 10,
           scoreHeavy: 50,
         },
-        visual: {
-          canvasWidth: 500,
-          canvasHeight: 950,
-          gridSize: 40,
+        // speeds in time-to-cross-screen seconds
+        speed: {
+          simpleEnemyCrossTime: 60,
+          simpleEnemyCrossTimeRand: 120,
+          simpleEnemyCrossTimeDecay: 4000,
+          heavyEnemyCrossTime: 120,
+          heavyEnemyCrossTimeRand: 240,
+          projectileCrossTime: 1.3,
           gridSpeed: 0.5,
-          playerY: 30,
-          playerRadius: 8,
-          playerGlow: 15,
-          enemySimpleHeight: 28,
-          enemyHeavyHeight: 40,
-          enemySimpleFont: 14,
-          enemyHeavyFont: 15,
-          enemyArmorBarHeight: 3,
-          enemyArmorBarOffset: 10,
-          enemyArmorLabelOffset: 14,
-          enemyPaddingX: 30,
-          projectileSpeed: 12,
+        },
+        // visual values in ‰ (thousandths of W or H)
+        visual: {
+          // from W
+          gridSize: 80,
+          enemyPaddingX: 60,
+          enemyAlienOffset: 16, // hexagon corner inset (was 8)
+          armorBarPad: 20, // barW = boxW - this (was 10)
+          armorBarFont: 20, // armor label font (was 10)
+          missTargetPadX: 60, // miss target min X edge (was 30)
+          missTargetPadY: 100, // miss target min Y from top (was 50)
+          inputAreaHeight: 105, // bottom input zone H (was ~55)
+          removeZone: 60, // enemy removal from bottom (was 60)
+          // from H
+          playerY: 32,
+          playerRadius: 16,
+          playerGlow: 30,
+          enemySimpleHeight: 30,
+          enemyHeavyHeight: 42,
+          enemySimpleFont: 28,
+          enemyHeavyFont: 30,
+          enemyArmorBarHeight: 6,
+          enemyArmorBarOffset: 11,
+          enemyArmorLabelOffset: 15,
+          enemyGlow: 10, // was 5
+          enemyFlashGlow: 50, // was 25
+          enemyLineWidth: 3, // was 1.5
+          projectileGlow: 30,
+          projectileHitRadius: 30,
+          projectileMissRadius: 30,
+          projectileFont: 28, // was 14
+          projectileCircleRadius: 30, // was 15
+          shakeHit: 8,
+          shakeMiss: 6,
+          shakeDamage: 16,
+          particleVel: 12, // was 6
+          particleSizeMin: 4, // was 2
+          particleSizeMax: 10, // was 3 → size range was 2-5, so max diff
+          particleGlow: 16, // was 8
+          trailSizeBase: 4, // was 2
+          trailSizeInc: 1, // was 0.5
+          trailGlow: 20, // was 10
+          shooterOffset: 50, // was H-50
+        },
+        // cumulative ratios (keep as-is)
+        visualRatio: {
+          missTargetYRange: 0.5,
           projectileTrailLength: 8,
           projectileTrailDecay: 0.15,
-          projectileGlow: 15,
-          projectileHitRadius: 15,
-          projectileMissRadius: 15,
-          particleCountHit: 15,
-          particleCountMiss: 20,
-          particleCountDestroySimple: 15,
-          particleCountDestroyHeavy: 30,
-          particleCountArmorBreak: 15,
-          shakeHit: 4,
-          shakeHitDuration: 6,
-          shakeMiss: 3,
-          shakeMissDuration: 5,
-          shakeDamage: 8,
-          shakeDamageDuration: 10,
+          projectileTrailAlpha: 0.6,
+          projectileCircleAlpha: 0.5,
+          enemyPulseRate: 0.05,
+          enemyAlphaBase: 0.7,
+          enemyAlphaRange: 0.3,
+          enemyGlowPulse: 5,
+          particleDecayBase: 0.02,
+          particleDecayRange: 0.03,
+          particleDamping: 0.98,
+        },
+        // counts (keep as-is)
+        counts: {
+          projectileTrailLength: 8,
+          particleHit: 15,
+          particleMiss: 20,
+          particleDestroySimple: 15,
+          particleDestroyHeavy: 30,
+          particleArmorBreak: 15,
           flashDuration: 10,
+          shakeHitDuration: 6,
+          shakeMissDuration: 5,
+          shakeDamageDuration: 10,
+          trailMaxLength: 10,
+          trailDecay: 0.12,
+          trailAlpha: 0.5,
+        },
+        // timing ms (keep as-is)
+        timing: {
+          inputShootDelay: 150,
           glitchDuration: 300,
-          inputShootDelay: 150, // ms — время анимации вылета из поля ввода
         },
         colors: {
           primary: "#00ff41",
@@ -121,7 +169,7 @@
         },
         intro: {
           fontSize: 44,
-          textYRatio: 0.35,
+          textYR: 0.35,
           subtitleYOffset: 60,
           fadeInFrames: 40,
           shot1Frame: 45,
@@ -133,6 +181,16 @@
           slideDuration: 20,
           totalFrames: 180,
           startDelay: 300,
+          glow: 50, // was 25
+          trailGlow: 20, // was 10
+          projectileGlow: 30, // was 15
+          projectileRadius: 8, // was 4
+          trailRect: 8, // was 4
+          trailMax: 10,
+          trailDecay: 0.12,
+          trailAlpha: 0.5,
+          subtitleFont: 32, // was 16
+          subtitleGlow: 20, // was 10
         },
       };
 
@@ -430,7 +488,7 @@
             } else {
               game.launchProjectile(line, null, false);
             }
-          }, CONFIG.visual.inputShootDelay);
+          }, S.inputShootDelay);
         },
 
         findEnemy(word) {
@@ -458,8 +516,129 @@
       // ═══════════════════════════════════════════════════════════════
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
-      const W = CONFIG.visual.canvasWidth;
-      const H = CONFIG.visual.canvasHeight;
+      let W, H;
+
+      // ═══════════════════════════════════════════════════════════════
+      //  SCALE — recalculates on init and resize
+      // ═══════════════════════════════════════════════════════════════
+      let S = {};
+
+      function recalc() {
+        const dpr = window.devicePixelRatio || 1;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        S = {};
+
+        const V = CONFIG.visual;
+        const C = CONFIG.counts;
+        const R = CONFIG.visualRatio;
+        const T = CONFIG.timing;
+
+        // from W
+        S.gridSize = Math.round(V.gridSize * W / 1000);
+        S.enemyPaddingX = Math.round(V.enemyPaddingX * W / 1000);
+        S.enemyAlienOffset = Math.round(V.enemyAlienOffset * W / 1000);
+        S.armorBarPad = Math.round(V.armorBarPad * W / 1000);
+        S.armorBarFont = Math.round(V.armorBarFont * W / 1000);
+        S.missTargetPadX = Math.round(V.missTargetPadX * W / 1000);
+        S.missTargetPadY = Math.round(V.missTargetPadY * H / 1000);
+        S.inputAreaHeight = Math.round(V.inputAreaHeight * H / 1000);
+        S.removeZone = Math.round(V.removeZone * H / 1000);
+
+        // from H
+        for (const k of ["playerY","playerRadius","playerGlow","enemySimpleHeight","enemyHeavyHeight",
+          "enemySimpleFont","enemyHeavyFont","enemyArmorBarHeight","enemyArmorBarOffset",
+          "enemyArmorLabelOffset","enemyGlow","enemyFlashGlow","enemyLineWidth",
+          "projectileGlow","projectileHitRadius","projectileMissRadius","projectileFont",
+          "projectileCircleRadius","shakeHit","shakeMiss","shakeDamage","particleVel",
+          "particleSizeMin","particleSizeMax","particleGlow","trailSizeBase","trailSizeInc",
+          "trailGlow","shooterOffset"]) {
+          S[k] = Math.round(V[k] * H / 1000);
+        }
+
+        // speeds from crossTime
+        const SP = CONFIG.speed;
+        const playH = H - S.removeZone;
+        S.simpleEnemySpeedBase = playH / (SP.simpleEnemyCrossTime * 60);
+        S.simpleEnemySpeedRandom = playH / (SP.simpleEnemyCrossTimeRand * 60);
+        S.simpleEnemySpeedPerWave = playH / (SP.simpleEnemyCrossTimeDecay * 60);
+        S.simpleEnemyMaxSpeed = playH / (15 * 60);
+        S.heavyEnemySpeedBase = playH / (SP.heavyEnemyCrossTime * 60);
+        S.heavyEnemySpeedRandom = playH / (SP.heavyEnemyCrossTimeRand * 60);
+        S.projectileSpeed = H / (SP.projectileCrossTime * 60);
+        S.gridSpeed = SP.gridSpeed * H / 1000;
+
+        // counts
+        for (const k of ["projectileTrailLength","particleHit","particleMiss",
+          "particleDestroySimple","particleDestroyHeavy","particleArmorBreak",
+          "flashDuration","shakeHitDuration","shakeMissDuration","shakeDamageDuration",
+          "trailMaxLength","trailDecay","trailAlpha"]) {
+          S[k] = C[k];
+        }
+
+        // ratios
+        for (const k of ["missTargetYRange","projectileTrailLength","projectileTrailDecay",
+          "projectileTrailAlpha","projectileCircleAlpha","enemyPulseRate","enemyAlphaBase",
+          "enemyAlphaRange","enemyGlowPulse","particleDecayBase","particleDecayRange",
+          "particleDamping"]) {
+          S[k] = R[k];
+        }
+
+        // timings
+        S.inputShootDelay = T.inputShootDelay;
+        S.glitchDuration = T.glitchDuration;
+
+        applyOverlayScale(W, H);
+      }
+
+      function applyOverlayScale(W, H) {
+        const title = document.querySelector(".screen-title");
+        if (title) title.style.fontSize = Math.round(40 * H / 1000) + "px";
+        const subs = document.querySelectorAll(".screen-subtitle");
+        for (let el of subs) el.style.fontSize = Math.round(18 * H / 1000) + "px";
+
+        const overlay = document.getElementById("ui-overlay");
+        if (overlay) {
+          overlay.style.padding = Math.round(12 * H / 1000) + "px " + Math.round(16 * W / 1000) + "px";
+          overlay.style.fontSize = Math.round(14 * H / 1000) + "px";
+        }
+        const inputDisplay = document.getElementById("input-display");
+        if (inputDisplay) {
+          inputDisplay.style.padding = Math.round(14 * H / 1000) + "px " + Math.round(16 * W / 1000) + "px";
+        }
+        const typed = document.getElementById("typed-text");
+        if (typed) {
+          typed.style.fontSize = Math.round(20 * H / 1000) + "px";
+          typed.style.minHeight = Math.round(28 * H / 1000) + "px";
+        }
+        const chForm = document.getElementById("channel-form");
+        if (chForm) {
+          chForm.querySelector(".screen-title").style.fontSize = Math.round(80 * H / 1000) + "px";
+          const inp = chForm.querySelector("input");
+          if (inp) {
+            inp.style.fontSize = Math.round(22 * H / 1000) + "px";
+            inp.style.padding = Math.round(12 * H / 1000) + "px " + Math.round(20 * W / 1000) + "px";
+            inp.style.width = Math.round(300 * W / 1000) + "px";
+          }
+          const btn = chForm.querySelector("button");
+          if (btn) {
+            btn.style.fontSize = Math.round(18 * H / 1000) + "px";
+            btn.style.padding = Math.round(10 * H / 1000) + "px " + Math.round(40 * W / 1000) + "px";
+            btn.style.minWidth = Math.round(260 * W / 1000) + "px";
+          }
+          const link = document.getElementById("game-link");
+          if (link) link.style.fontSize = Math.round(16 * H / 1000) + "px";
+          const note = chForm.querySelector(".obs-note");
+          if (note) note.style.fontSize = Math.round(16 * H / 1000) + "px";
+        }
+        const goTitle = document.getElementById("gameover-title");
+        if (goTitle) goTitle.style.fontSize = Math.round(32 * H / 1000) + "px";
+      }
 
       let gameState = "start";
       let score = 0,
@@ -490,14 +669,14 @@
             document.getElementById("score").textContent = score;
             this.destroyEnemy(enemy);
           } else {
-            spawnParticles(enemy.x, enemy.y, CONFIG.colors.heavy, CONFIG.visual.particleCountArmorBreak);
-            triggerShake(CONFIG.visual.shakeHit, CONFIG.visual.shakeHitDuration);
+            spawnParticles(enemy.x, enemy.y, CONFIG.colors.heavy, S.particleArmorBreak);
+            triggerShake(S.shakeHit, S.shakeHitDuration);
           }
         },
 
         onProjectileMiss(projectile) {
-          spawnParticles(projectile.targetX, projectile.targetY, CONFIG.colors.miss, CONFIG.visual.particleCountMiss);
-          triggerShake(CONFIG.visual.shakeMiss, CONFIG.visual.shakeMissDuration);
+          spawnParticles(projectile.targetX, projectile.targetY, CONFIG.colors.miss, S.particleMiss);
+          triggerShake(S.shakeMiss, S.shakeMissDuration);
         },
 
         destroyEnemy(enemy) {
@@ -505,8 +684,8 @@
           if (idx > -1) {
             const color = enemy.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
             const count = enemy.isHeavy
-              ? CONFIG.visual.particleCountDestroyHeavy
-              : CONFIG.visual.particleCountDestroySimple;
+              ? S.particleDestroyHeavy
+              : S.particleDestroySimple;
             spawnParticles(enemy.x, enemy.y, color, count);
             enemies.splice(idx, 1);
           }
@@ -520,10 +699,9 @@
         constructor(word, targetEnemy, isHit) {
           this.word = word;
           this.isHit = isHit;
-          // Старт из поля ввода (низ экрана, центр по X)
           this.x = W / 2;
-          this.y = H - 50; // позиция поля ввода
-          this.speed = CONFIG.visual.projectileSpeed;
+          this.y = H - S.shooterOffset;
+          this.speed = S.projectileSpeed;
           this.life = 1;
           this.trail = [];
           this.hit = false;
@@ -539,8 +717,8 @@
             this.vy = (dy / dist) * this.speed;
           } else {
             this.target = null;
-            this.targetX = 30 + Math.random() * (W - 60);
-            this.targetY = 50 + Math.random() * (H * 0.5);
+            this.targetX = S.missTargetPadX + Math.random() * (W - 2 * S.missTargetPadX);
+            this.targetY = S.missTargetPadY + Math.random() * (H * S.missTargetYRange);
             const dx = this.targetX - this.x;
             const dy = this.targetY - this.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -551,10 +729,10 @@
 
         update() {
           this.trail.push({ x: this.x, y: this.y, life: 1 });
-          if (this.trail.length > CONFIG.visual.projectileTrailLength) this.trail.shift();
+          if (this.trail.length > S.projectileTrailLength) this.trail.shift();
 
           for (let t of this.trail) {
-            t.life -= CONFIG.visual.projectileTrailDecay;
+            t.life -= S.projectileTrailDecay;
           }
           this.trail = this.trail.filter((t) => t.life > 0);
 
@@ -566,7 +744,7 @@
             const dy = this.target.y - this.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < CONFIG.visual.projectileHitRadius) {
+            if (dist < S.projectileHitRadius) {
               this.hit = true;
               game.onProjectileHit(this, this.target);
               return false;
@@ -582,14 +760,15 @@
             const dy = this.targetY - this.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < CONFIG.visual.projectileMissRadius) {
+            if (dist < S.projectileMissRadius) {
               this.hit = true;
               game.onProjectileMiss(this);
               return false;
             }
           }
 
-          if (this.x < -50 || this.x > W + 50 || this.y < -50 || this.y > H + 50) {
+          const off = S.shooterOffset;
+          if (this.x < -off || this.x > W + off || this.y < -off || this.y > H + off) {
             return false;
           }
 
@@ -604,28 +783,28 @@
 
           for (let i = 0; i < this.trail.length; i++) {
             const t = this.trail[i];
-            ctx.globalAlpha = t.life * 0.6;
+            ctx.globalAlpha = t.life * S.projectileTrailAlpha;
             ctx.fillStyle = color;
             ctx.shadowColor = glowColor;
-            ctx.shadowBlur = 10;
-            const size = 2 + i * 0.5;
+            ctx.shadowBlur = S.trailGlow;
+            const size = S.trailSizeBase + i * S.trailSizeInc;
             ctx.fillRect(t.x - size / 2, t.y - size / 2, size, size);
           }
 
           ctx.globalAlpha = 1;
-          ctx.font = 'bold 14px "Terminator Cyr", "Courier New", monospace';
+          ctx.font = `bold ${S.projectileFont}px "Courier New", monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillStyle = color;
           ctx.shadowColor = glowColor;
-          ctx.shadowBlur = CONFIG.visual.projectileGlow;
+          ctx.shadowBlur = S.projectileGlow;
           ctx.fillText(this.word, this.x, this.y);
 
           ctx.strokeStyle = color;
           ctx.lineWidth = 1;
-          ctx.globalAlpha = 0.5;
+          ctx.globalAlpha = S.projectileCircleAlpha;
           ctx.beginPath();
-          ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+          ctx.arc(this.x, this.y, S.projectileCircleRadius, 0, Math.PI * 2);
           ctx.stroke();
 
           ctx.restore();
@@ -635,8 +814,8 @@
       function drawGrid() {
         ctx.strokeStyle = CONFIG.colors.primaryGrid;
         ctx.lineWidth = 1;
-        const gridSize = CONFIG.visual.gridSize;
-        bgOffset = (bgOffset + CONFIG.visual.gridSpeed) % gridSize;
+        const gridSize = S.gridSize;
+        bgOffset = (bgOffset + S.gridSpeed) % gridSize;
         for (let x = 0; x <= W; x += gridSize) {
           ctx.beginPath();
           ctx.moveTo(x, 0);
@@ -669,11 +848,14 @@
 
           this.y = 0;
           this.speed = isHeavy
-            ? CONFIG.game.heavyEnemySpeedBase + Math.random() * CONFIG.game.heavyEnemySpeedRandom
-            : CONFIG.game.simpleEnemySpeedBase +
-              Math.random() * CONFIG.game.simpleEnemySpeedRandom +
-              wave * CONFIG.game.simpleEnemySpeedPerWave;
-          this.height = isHeavy ? CONFIG.visual.enemyHeavyHeight : CONFIG.visual.enemySimpleHeight;
+            ? S.heavyEnemySpeedBase + Math.random() * S.heavyEnemySpeedRandom
+            : Math.min(
+                S.simpleEnemySpeedBase +
+                  Math.random() * S.simpleEnemySpeedRandom +
+                  wave * S.simpleEnemySpeedPerWave,
+                S.simpleEnemyMaxSpeed,
+              );
+          this.height = isHeavy ? S.enemyHeavyHeight : S.enemySimpleHeight;
           this.pulse = 0;
           this.flashTimer = 0;
           this.width = 0;
@@ -681,10 +863,10 @@
         }
 
         _calculateSpawnX() {
-          const padding = CONFIG.visual.enemyPaddingX;
+          const padding = S.enemyPaddingX;
 
           ctx.save();
-          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? CONFIG.visual.enemyHeavyFont : CONFIG.visual.enemySimpleFont}px 'Terminator Cyr', 'Courier New', monospace`;
+          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? S.enemyHeavyFont : S.enemySimpleFont}px 'Courier New', monospace`;
 
           let maxTextWidth = 0;
           for (let word of this.words) {
@@ -704,7 +886,7 @@
 
         nextWord() {
           this.currentWordIndex++;
-          this.flashTimer = CONFIG.visual.flashDuration;
+          this.flashTimer = S.flashDuration;
           if (this.currentWordIndex >= this.words.length) {
             return true;
           }
@@ -719,66 +901,65 @@
         }
 
         draw() {
-          const glow = 5;
-          const alpha = 0.7 + Math.sin(this.pulse) * 0.3;
+          const alpha = S.enemyAlphaBase + Math.sin(this.pulse) * S.enemyAlphaRange;
           const flash = this.flashTimer > 0;
 
           ctx.save();
-          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? CONFIG.visual.enemyHeavyFont : CONFIG.visual.enemySimpleFont}px 'Terminator Cyr', 'Courier New', monospace`;
-          const textW = ctx.measureText(this.text).width;
+          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? S.enemyHeavyFont : S.enemySimpleFont}px 'Courier New', monospace`;
 
           const boxW = this.width;
           const boxH = this.height;
 
           ctx.shadowColor = flash ? CONFIG.colors.white : this.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
-          ctx.shadowBlur = flash ? 25 : glow + Math.sin(this.pulse * 2) * 5;
+          ctx.shadowBlur = flash ? S.enemyFlashGlow : S.enemyGlow + Math.sin(this.pulse * 2) * S.enemyGlowPulse;
 
           ctx.strokeStyle = flash
             ? CONFIG.colors.white
             : this.isHeavy
               ? `rgba(255,170,0,${alpha})`
               : `rgba(0,255,65,${alpha})`;
-          ctx.lineWidth = flash ? 3 : 1.5;
+          ctx.lineWidth = flash ? S.enemyLineWidth * 2 : S.enemyLineWidth;
 
           if (this.isHeavy) {
+            const off = S.enemyAlienOffset;
             ctx.beginPath();
-            ctx.moveTo(this.x - boxW / 2 + 8, this.y - boxH / 2);
-            ctx.lineTo(this.x + boxW / 2 - 8, this.y - boxH / 2);
+            ctx.moveTo(this.x - boxW / 2 + off, this.y - boxH / 2);
+            ctx.lineTo(this.x + boxW / 2 - off, this.y - boxH / 2);
             ctx.lineTo(this.x + boxW / 2, this.y);
-            ctx.lineTo(this.x + boxW / 2 - 8, this.y + boxH / 2);
-            ctx.lineTo(this.x - boxW / 2 + 8, this.y + boxH / 2);
+            ctx.lineTo(this.x + boxW / 2 - off, this.y + boxH / 2);
+            ctx.lineTo(this.x - boxW / 2 + off, this.y + boxH / 2);
             ctx.lineTo(this.x - boxW / 2, this.y);
             ctx.closePath();
             ctx.stroke();
 
-            const barW = boxW - 10;
-            const barH = CONFIG.visual.enemyArmorBarHeight;
+            const barW = boxW - S.armorBarPad;
+            const barH = S.enemyArmorBarHeight;
             const totalLayers = this.words.length;
             const remainingLayers = totalLayers - this.currentWordIndex;
             ctx.fillStyle = CONFIG.colors.armorBarBg;
-            ctx.fillRect(this.x - barW / 2, this.y - boxH / 2 - CONFIG.visual.enemyArmorBarOffset, barW, barH);
+            ctx.fillRect(this.x - barW / 2, this.y - boxH / 2 - S.enemyArmorBarOffset, barW, barH);
             ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.armorBarFill;
             ctx.fillRect(
               this.x - barW / 2,
-              this.y - boxH / 2 - CONFIG.visual.enemyArmorBarOffset,
+              this.y - boxH / 2 - S.enemyArmorBarOffset,
               barW * (remainingLayers / totalLayers),
               barH,
             );
 
-            ctx.font = '10px "Terminator Cyr", "Courier New", monospace';
+            ctx.font = `${S.armorBarFont}px "Courier New", monospace`;
             ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.heavy;
             ctx.textAlign = "center";
             ctx.fillText(
               `${CONFIG.texts.armorLabel} ${remainingLayers}/${totalLayers}`,
               this.x,
-              this.y - boxH / 2 - CONFIG.visual.enemyArmorLabelOffset,
+              this.y - boxH / 2 - S.enemyArmorLabelOffset,
             );
           } else {
             ctx.strokeRect(this.x - boxW / 2, this.y - boxH / 2, boxW, boxH);
           }
 
           ctx.shadowBlur = 0;
-          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? CONFIG.visual.enemyHeavyFont : CONFIG.visual.enemySimpleFont}px 'Terminator Cyr', 'Courier New', monospace`;
+          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? S.enemyHeavyFont : S.enemySimpleFont}px 'Courier New', monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
@@ -802,26 +983,26 @@
         constructor(x, y, color) {
           this.x = x;
           this.y = y;
-          this.vx = (Math.random() - 0.5) * 6;
-          this.vy = (Math.random() - 0.5) * 6;
+          this.vx = (Math.random() - 0.5) * S.particleVel;
+          this.vy = (Math.random() - 0.5) * S.particleVel;
           this.life = 1;
-          this.decay = 0.02 + Math.random() * 0.03;
+          this.decay = S.particleDecayBase + Math.random() * S.particleDecayRange;
           this.color = color;
-          this.size = 2 + Math.random() * 3;
+          this.size = S.particleSizeMin + Math.random() * (S.particleSizeMax - S.particleSizeMin);
         }
         update() {
           this.x += this.vx;
           this.y += this.vy;
           this.life -= this.decay;
-          this.vx *= 0.98;
-          this.vy *= 0.98;
+          this.vx *= S.particleDamping;
+          this.vy *= S.particleDamping;
         }
         draw() {
           ctx.save();
           ctx.globalAlpha = this.life;
           ctx.fillStyle = this.color;
           ctx.shadowColor = this.color;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = S.particleGlow;
           ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
           ctx.restore();
         }
@@ -845,11 +1026,11 @@
       function takeDamage() {
         lives--;
         document.getElementById("lives").textContent = lives;
-        triggerShake(CONFIG.visual.shakeDamage, CONFIG.visual.shakeDamageDuration);
+        triggerShake(S.shakeDamage, S.shakeDamageDuration);
         document.getElementById("game-container").classList.add("glitch");
         setTimeout(
           () => document.getElementById("game-container").classList.remove("glitch"),
-          CONFIG.visual.glitchDuration,
+          S.glitchDuration,
         );
 
         if (lives <= 0) {
@@ -872,6 +1053,7 @@
           document.getElementById("ui-overlay").classList.add("hidden");
           document.getElementById("input-display").classList.add("hidden");
           gameLoopStarted = false;
+          recalc();
           runIntro();
         }, 10000);
       }
@@ -992,7 +1174,7 @@
           const e = enemies[i];
           e.update();
 
-          if (e.y > H - 60) {
+          if (e.y > H - S.removeZone) {
             takeDamage();
             enemies.splice(i, 1);
           }
@@ -1032,19 +1214,19 @@
 
         ctx.save();
         ctx.fillStyle = CONFIG.colors.playerBase;
-        ctx.fillRect(0, H - 55, W, 55);
+        ctx.fillRect(0, H - S.inputAreaHeight, W, S.inputAreaHeight);
         ctx.strokeStyle = CONFIG.colors.primary;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, H - 55);
-        ctx.lineTo(W, H - 55);
+        ctx.moveTo(0, H - S.inputAreaHeight);
+        ctx.lineTo(W, H - S.inputAreaHeight);
         ctx.stroke();
 
         ctx.fillStyle = CONFIG.colors.primary;
         ctx.shadowColor = CONFIG.colors.primary;
-        ctx.shadowBlur = CONFIG.visual.playerGlow;
+        ctx.shadowBlur = S.playerGlow;
         ctx.beginPath();
-        ctx.arc(W / 2, H - CONFIG.visual.playerY, CONFIG.visual.playerRadius, 0, Math.PI * 2);
+        ctx.arc(W / 2, H - S.playerY, S.playerRadius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
@@ -1066,11 +1248,21 @@
       function runIntro() {
         introPlaying = true;
         const I = CONFIG.intro;
-        const FONT_SIZE = I.fontSize;
-        const TEXT_Y = Math.round(H * I.textYRatio);
-
+        const ih = H / 1000;
+        const IS = {
+          fontSize: Math.round(I.fontSize * ih),
+          glow: Math.round(I.glow * ih),
+          trailGlow: Math.round(I.trailGlow * ih),
+          projectileGlow: Math.round(I.projectileGlow * ih),
+          projectileRadius: Math.round(I.projectileRadius * ih),
+          trailRect: Math.round(I.trailRect * ih),
+          subtitleFont: Math.round(I.subtitleFont * ih),
+          subtitleGlow: Math.round(I.subtitleGlow * ih),
+          subtitleYOffset: Math.round(I.subtitleYOffset * ih),
+        };
+        const TEXT_Y = Math.round(H * I.textYR);
         ctx.save();
-        ctx.font = `bold ${FONT_SIZE}px "Courier New", monospace`;
+        ctx.font = `bold ${IS.fontSize}px "Courier New", monospace`;
         const totalW = ctx.measureText("SHOOTING WORLD").width;
         const worW = ctx.measureText("SHOOTING WOR").width;
         const lW = ctx.measureText("L").width;
@@ -1081,7 +1273,7 @@
         const lTargetX = cx - totalW / 2 + worW + lW / 2;
         const lTargetY = TEXT_Y;
         const shooterX = cx;
-        const shooterY = H - 50;
+        const shooterY = H - S.shooterOffset;
 
         let frame = 0;
         let textAlpha = 0;
@@ -1090,14 +1282,14 @@
 
         function drawPartialWorld(alpha, dSlide) {
           ctx.save();
-          ctx.font = `bold ${FONT_SIZE}px "Courier New", monospace`;
+          ctx.font = `bold ${IS.fontSize}px "Courier New", monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
           ctx.globalAlpha = alpha;
           ctx.fillStyle = CONFIG.colors.primary;
           ctx.shadowColor = CONFIG.colors.primaryGlow;
-          ctx.shadowBlur = 25;
+          ctx.shadowBlur = IS.glow;
           ctx.fillText("SHOOTING WOR", cx - totalW / 2 + worW / 2, TEXT_Y);
 
           const lFade = Math.max(0, 1 - dSlide);
@@ -1119,20 +1311,20 @@
           ctx.save();
 
           for (let t of s.trail) {
-            ctx.globalAlpha = t.life * 0.5;
+            ctx.globalAlpha = t.life * I.trailAlpha;
             ctx.fillStyle = CONFIG.colors.primary;
             ctx.shadowColor = CONFIG.colors.primary;
-            ctx.shadowBlur = 10;
-            ctx.fillRect(t.x - 2, t.y - 2, 4, 4);
+            ctx.shadowBlur = IS.trailGlow;
+            ctx.fillRect(t.x - IS.trailRect / 2, t.y - IS.trailRect / 2, IS.trailRect, IS.trailRect);
           }
 
           if (!s.done) {
             ctx.globalAlpha = 1;
             ctx.fillStyle = CONFIG.colors.primary;
             ctx.shadowColor = CONFIG.colors.primary;
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = IS.projectileGlow;
             ctx.beginPath();
-            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.arc(x, y, IS.projectileRadius, 0, Math.PI * 2);
             ctx.fill();
           }
           ctx.restore();
@@ -1157,8 +1349,8 @@
             const y = shooterY + (lTargetY - shooterY) * s.progress;
 
             s.trail.push({ x, y, life: 1 });
-            if (s.trail.length > 10) s.trail.shift();
-            for (let t of s.trail) t.life -= 0.12;
+            if (s.trail.length > I.trailMax) s.trail.shift();
+            for (let t of s.trail) t.life -= I.trailDecay;
             s.trail = s.trail.filter((t) => t.life > 0);
 
             if (s.progress >= 1) {
@@ -1193,13 +1385,13 @@
             drawGrid();
             drawPartialWorld(1, 1);
             ctx.save();
-            ctx.font = '16px "Terminator Cyr", "Courier New", monospace';
+            ctx.font = `${IS.subtitleFont}px "Courier New", monospace`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = CONFIG.colors.primaryDim;
             ctx.shadowColor = CONFIG.colors.primary;
-            ctx.shadowBlur = 10;
-            ctx.fillText(CONFIG.texts.startSubtitle, cx, TEXT_Y + I.subtitleYOffset);
+            ctx.shadowBlur = IS.subtitleGlow;
+            ctx.fillText(CONFIG.texts.startSubtitle, cx, TEXT_Y + IS.subtitleYOffset);
             ctx.restore();
           }
         }
@@ -1207,6 +1399,8 @@
         setTimeout(introLoop, I.startDelay);
       }
 
+      window.addEventListener("resize", recalc);
+      recalc();
       runIntro();
     </script>
   </body>
