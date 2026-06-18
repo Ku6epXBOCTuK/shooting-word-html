@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shooting word</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="tmi.min.js"></script>
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="game-canvas" width="500" height="950"></canvas>
+
+      <div id="ui-overlay">
+        <span class="ui-text">SCORE: <span id="score">0</span></span>
+        <span class="ui-text">WAVE: <span id="wave">1</span></span>
+        <span class="ui-text">LIVES: <span id="lives">3</span></span>
+      </div>
+
+      <div id="input-display">
+        <div id="typed-text"></div>
+      </div>
+
+      <div id="start-screen">
+        <div class="screen-title">Shooting word</div>
+        <div class="screen-subtitle" id="start-subtitle">Введи !play чтобы начать</div>
+      </div>
+
+      <div id="gameover-screen" class="hidden">
+        <div class="screen-title" id="gameover-title">ЧАТ, ВЫ ПРОИГРАЛИ!</div>
+        <div class="screen-subtitle">Final Score: <span id="final-score">0</span></div>
+        <div class="screen-subtitle" id="gameover-subtitle">Введи !play чтобы играть</div>
+      </div>
+    </div>
+
+    <script>
+      // ═══════════════════════════════════════════════════════════════
+      //  CONFIG
+      // ═══════════════════════════════════════════════════════════════
+      const CONFIG = {
+        commands: { play: "!play" },
+        texts: {
+          startTitle: "SHOOTING WORD",
+          startSubtitle: "Введи !play чтобы начать",
+          gameOverTitle: "ЧАТ, ВЫ ПРОИГРАЛИ!",
+          gameOverSubtitle: "Введи !play чтобы играть",
+          scoreLabel: "SCORE:",
+          waveLabel: "WAVE:",
+          livesLabel: "LIVES:",
+          finalScoreLabel: "Final Score:",
+          armorLabel: "ARMOR",
+        },
+        game: {
+          startLives: 10,
+          startWave: 1,
+          startScore: 0,
+          spawnIntervalBase: 300,
+          spawnIntervalMin: 120,
+          spawnIntervalDecayPerWave: 8,
+          waveInterval: 900,
+          heavyEnemyChanceBase: 0.25,
+          heavyEnemyChancePerWave: 0.02,
+          simpleEnemySpeedBase: 0.35,
+          simpleEnemySpeedRandom: 0.3,
+          simpleEnemySpeedPerWave: 0.02,
+          heavyEnemySpeedBase: 0.15,
+          heavyEnemySpeedRandom: 0.2,
+          scoreSimple: 10,
+          scoreHeavy: 50,
+        },
+        visual: {
+          canvasWidth: 500,
+          canvasHeight: 950,
+          gridSize: 40,
+          gridSpeed: 0.5,
+          playerY: 30,
+          playerRadius: 8,
+          playerGlow: 15,
+          enemySimpleHeight: 28,
+          enemyHeavyHeight: 40,
+          enemySimpleFont: 14,
+          enemyHeavyFont: 15,
+          enemyArmorBarHeight: 3,
+          enemyArmorBarOffset: 10,
+          enemyArmorLabelOffset: 14,
+          enemyPaddingX: 30,
+          projectileSpeed: 12,
+          projectileTrailLength: 8,
+          projectileTrailDecay: 0.15,
+          projectileGlow: 15,
+          projectileHitRadius: 15,
+          projectileMissRadius: 15,
+          particleCountHit: 15,
+          particleCountMiss: 20,
+          particleCountDestroySimple: 15,
+          particleCountDestroyHeavy: 30,
+          particleCountArmorBreak: 15,
+          shakeHit: 4,
+          shakeHitDuration: 6,
+          shakeMiss: 3,
+          shakeMissDuration: 5,
+          shakeDamage: 8,
+          shakeDamageDuration: 10,
+          flashDuration: 10,
+          glitchDuration: 300,
+          inputShootDelay: 150, // ms — время анимации вылета из поля ввода
+        },
+        colors: {
+          primary: "#00ff41",
+          primaryDim: "#00cc33",
+          primaryGlow: "rgba(0,255,65,0.2)",
+          primaryGrid: "rgba(0,255,65,0.08)",
+          heavy: "#ffaa00",
+          heavyDim: "#cc8800",
+          miss: "#ff0044",
+          white: "#ffffff",
+          red: "#ff0000",
+          armorBarBg: "rgba(255,0,0,0.3)",
+          armorBarFill: "#ffaa00",
+          playerBase: "rgba(0,255,65,0.15)",
+          scanline: "rgba(0,255,65,0.03)",
+        },
+      };
+
+      // ═══════════════════════════════════════════════════════════════
+      //  WORD GENERATOR
+      // ═══════════════════════════════════════════════════════════════
+      const WordGenerator = {
+        simpleWords: [
+          "hack",
+          "code",
+          "data",
+          "node",
+          "link",
+          "byte",
+          "bit",
+          "net",
+          "web",
+          "sys",
+          "run",
+          "log",
+          "bug",
+          "fix",
+          "api",
+          "cpu",
+          "ram",
+          "ssd",
+          "gpu",
+          "dns",
+          "ip",
+          "url",
+          "tag",
+          "css",
+          "js",
+          "sql",
+          "git",
+          "cli",
+          "env",
+          "dev",
+          "app",
+          "bot",
+          "ai",
+          "io",
+          "os",
+          "ui",
+          "ux",
+          "vm",
+          "vpn",
+          "lan",
+          "wan",
+          "ftp",
+          "ssh",
+          "http",
+          "json",
+          "xml",
+          "yaml",
+          "md",
+          "py",
+          "go",
+          "rust",
+          "java",
+          "php",
+          "cpp",
+          "ts",
+          "rb",
+          "kt",
+          "swift",
+          "dart",
+          "lua",
+          "perl",
+          "bash",
+          "zsh",
+          "fish",
+          "vim",
+          "nano",
+          "emacs",
+          "sed",
+          "awk",
+          "grep",
+          "find",
+          "cat",
+          "ls",
+          "cd",
+          "mv",
+          "cp",
+          "rm",
+          "mkdir",
+          "chmod",
+          "chown",
+          "ping",
+          "curl",
+          "wget",
+          "nc",
+          "nmap",
+          "tcp",
+          "udp",
+          "ip4",
+          "ip6",
+          "mac",
+          "hex",
+          "bin",
+          "dec",
+          "oct",
+          "xor",
+          "and",
+          "or",
+          "not",
+          "shl",
+          "shr",
+          "key",
+          "lock",
+          "door",
+          "gate",
+          "wall",
+          "fire",
+          "ice",
+          "wind",
+          "storm",
+          "rain",
+          "sun",
+          "moon",
+          "star",
+          "void",
+          "null",
+          "zero",
+          "one",
+          "two",
+          "ten",
+          "max",
+        ],
+        heavyWords: [
+          ["root", "access"],
+          ["data", "breach"],
+          ["fire", "wall"],
+          ["deep", "web"],
+          ["dark", "net"],
+          ["cloud", "base"],
+          ["neural", "net"],
+          ["quantum", "bit"],
+          ["block", "chain"],
+          ["smart", "contract"],
+          ["machine", "learn"],
+          ["deep", "fake"],
+          ["zero", "day"],
+          ["back", "door"],
+          ["side", "channel"],
+          ["man", "middle"],
+          ["denial", "service"],
+          ["brute", "force"],
+          ["social", "engineer"],
+          ["phishing", "attack"],
+          ["sql", "inject"],
+          ["cross", "site"],
+          ["buffer", "over"],
+          ["heap", "spray"],
+          ["stack", "pivot"],
+          ["return", "orient"],
+          ["format", "string"],
+          ["race", "condition"],
+          ["time", "check"],
+          ["use", "after"],
+          ["double", "free"],
+          ["null", "pointer"],
+          ["integer", "over"],
+          ["type", "confus"],
+          ["memory", "leak"],
+          ["dead", "lock"],
+          ["live", "lock"],
+          ["starvation", "mode"],
+          ["priority", "invert"],
+          ["cache", "miss"],
+          ["branch", "mispred"],
+          ["speculative", "exec"],
+          ["meltdown", "flaw"],
+          ["spectre", "bug"],
+          ["row", "hammer"],
+          ["cold", "boot"],
+          ["evil", "maid"],
+          ["supply", "chain"],
+          ["hardware", "troj"],
+          ["firmware", "root"],
+          ["bios", "implant"],
+          ["uefi", "shell"],
+          ["smm", "exploit"],
+          ["ring", "zero"],
+          ["kernel", "panic"],
+          ["blue", "screen"],
+          ["kernel", "oops"],
+          ["seg", "fault"],
+          ["bus", "error"],
+          ["illegal", "op"],
+          ["trap", "divide"],
+          ["trap", "debug"],
+          ["trap", "nmi"],
+          ["trap", "break"],
+          ["trap", "overflow"],
+          ["trap", "bound"],
+          ["trap", "invalid"],
+          ["trap", "device"],
+          ["trap", "double"],
+          ["trap", "copro"],
+          ["trap", "tss"],
+          ["trap", "segment"],
+          ["trap", "stack"],
+          ["trap", "general"],
+          ["trap", "page"],
+          ["trap", "x87"],
+          ["trap", "align"],
+          ["trap", "machine"],
+          ["trap", "simd"],
+          ["trap", "virtual"],
+          ["security", "check"],
+          ["stack", "cookie"],
+          ["aslr", "bypass"],
+          ["dep", "bypass"],
+          ["cfg", "bypass"],
+          ["cet", "bypass"],
+          ["shadow", "stack"],
+          ["control", "flow"],
+          ["indirect", "call"],
+          ["jump", "oriented"],
+          ["call", "oriented"],
+          ["data", "oriented"],
+          ["counterfeit", "obj"],
+          ["use", "after"],
+          ["heap", "feng"],
+          ["house", "spirit"],
+          ["house", "lore"],
+          ["house", "force"],
+          ["fast", "bin"],
+          ["tcache", "poison"],
+          ["unsorted", "bin"],
+          ["large", "bin"],
+          ["small", "bin"],
+          ["mmap", "chunk"],
+          ["top", "chunk"],
+          ["wilderness", "area"],
+          ["arena", "corrupt"],
+          ["thread", "cache"],
+          ["per", "thread"],
+          ["main", "arena"],
+        ],
+
+        generateWord(isHeavy) {
+          if (isHeavy) {
+            const pair = this.heavyWords[Math.floor(Math.random() * this.heavyWords.length)];
+            return pair;
+          }
+          return this.simpleWords[Math.floor(Math.random() * this.simpleWords.length)];
+        },
+      };
+
+      // ═══════════════════════════════════════════════════════════════
+      //  UNIVERSAL INPUT MODULE
+      // ═══════════════════════════════════════════════════════════════
+      const InputModule = {
+        currentLine: "",
+
+        submitLine(text) {
+          const line = text.trim().toLowerCase();
+          if (!line) return;
+
+          if (line === CONFIG.commands.play) {
+            if (gameState === "start" || gameState === "gameover") {
+              startGame();
+            }
+            return;
+          }
+
+          if (gameState !== "playing") return;
+
+          this.currentLine = line;
+          this.updateDisplay(line);
+
+          const enemy = this.findEnemy(line);
+
+          // АНИМАЦИЯ: слово вылетает из поля ввода, потом запускается снаряд
+          this.animateShoot(line, enemy);
+        },
+
+        animateShoot(line, enemy) {
+          const el = document.getElementById("typed-text");
+
+          // Добавляем CSS-класс для анимации вылета
+          el.classList.add("shooting");
+
+          // После анимации — запускаем снаряд из поля ввода
+          setTimeout(() => {
+            el.classList.remove("shooting");
+            this.currentLine = "";
+            this.updateDisplay("");
+
+            if (enemy) {
+              game.launchProjectile(line, enemy, true);
+            } else {
+              game.launchProjectile(line, null, false);
+            }
+          }, CONFIG.visual.inputShootDelay);
+        },
+
+        findEnemy(word) {
+          for (let e of enemies) {
+            if (e.text === word) {
+              return e;
+            }
+          }
+          return null;
+        },
+
+        updateDisplay(text) {
+          const el = document.getElementById("typed-text");
+          el.innerHTML = text;
+        },
+
+        clear() {
+          this.currentLine = "";
+          this.updateDisplay("");
+        },
+      };
+
+      // ═══════════════════════════════════════════════════════════════
+      //  GAME ENGINE
+      // ═══════════════════════════════════════════════════════════════
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+      const W = CONFIG.visual.canvasWidth;
+      const H = CONFIG.visual.canvasHeight;
+
+      let gameState = "start";
+      let score = 0,
+        wave = 1,
+        lives = 3;
+      let enemies = [];
+      let particles = [];
+      let projectiles = [];
+      let spawnTimer = 0;
+      let spawnInterval = CONFIG.game.spawnIntervalBase;
+      let waveTimer = 0;
+      let shakeTimer = 0;
+      let shakeAmount = 0;
+      let bgOffset = 0;
+
+      const game = {
+        launchProjectile(word, targetEnemy, isHit) {
+          projectiles.push(new Projectile(word, targetEnemy, isHit));
+        },
+
+        onProjectileHit(projectile, enemy) {
+          const dead = enemy.nextWord();
+
+          if (dead) {
+            score += enemy.isHeavy ? CONFIG.game.scoreHeavy : CONFIG.game.scoreSimple;
+            document.getElementById("score").textContent = score;
+            this.destroyEnemy(enemy);
+          } else {
+            spawnParticles(enemy.x, enemy.y, CONFIG.colors.heavy, CONFIG.visual.particleCountArmorBreak);
+            triggerShake(CONFIG.visual.shakeHit, CONFIG.visual.shakeHitDuration);
+          }
+        },
+
+        onProjectileMiss(projectile) {
+          spawnParticles(projectile.targetX, projectile.targetY, CONFIG.colors.miss, CONFIG.visual.particleCountMiss);
+          triggerShake(CONFIG.visual.shakeMiss, CONFIG.visual.shakeMissDuration);
+        },
+
+        destroyEnemy(enemy) {
+          const idx = enemies.indexOf(enemy);
+          if (idx > -1) {
+            const color = enemy.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
+            const count = enemy.isHeavy
+              ? CONFIG.visual.particleCountDestroyHeavy
+              : CONFIG.visual.particleCountDestroySimple;
+            spawnParticles(enemy.x, enemy.y, color, count);
+            enemies.splice(idx, 1);
+          }
+        },
+      };
+
+      // ═══════════════════════════════════════════════════════════════
+      //  PROJECTILE — вылетает из поля ввода (низ экрана, центр)
+      // ═══════════════════════════════════════════════════════════════
+      class Projectile {
+        constructor(word, targetEnemy, isHit) {
+          this.word = word;
+          this.isHit = isHit;
+          // Старт из поля ввода (низ экрана, центр по X)
+          this.x = W / 2;
+          this.y = H - 50; // позиция поля ввода
+          this.speed = CONFIG.visual.projectileSpeed;
+          this.life = 1;
+          this.trail = [];
+          this.hit = false;
+
+          if (isHit && targetEnemy) {
+            this.target = targetEnemy;
+            this.targetX = targetEnemy.x;
+            this.targetY = targetEnemy.y;
+            const dx = targetEnemy.x - this.x;
+            const dy = targetEnemy.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            this.vx = (dx / dist) * this.speed;
+            this.vy = (dy / dist) * this.speed;
+          } else {
+            this.target = null;
+            this.targetX = 30 + Math.random() * (W - 60);
+            this.targetY = 50 + Math.random() * (H * 0.5);
+            const dx = this.targetX - this.x;
+            const dy = this.targetY - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            this.vx = (dx / dist) * this.speed;
+            this.vy = (dy / dist) * this.speed;
+          }
+        }
+
+        update() {
+          this.trail.push({ x: this.x, y: this.y, life: 1 });
+          if (this.trail.length > CONFIG.visual.projectileTrailLength) this.trail.shift();
+
+          for (let t of this.trail) {
+            t.life -= CONFIG.visual.projectileTrailDecay;
+          }
+          this.trail = this.trail.filter((t) => t.life > 0);
+
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.isHit && this.target && !this.hit) {
+            const dx = this.target.x - this.x;
+            const dy = this.target.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < CONFIG.visual.projectileHitRadius) {
+              this.hit = true;
+              game.onProjectileHit(this, this.target);
+              return false;
+            }
+
+            if (!enemies.includes(this.target)) {
+              return false;
+            }
+          }
+
+          if (!this.isHit && !this.hit) {
+            const dx = this.targetX - this.x;
+            const dy = this.targetY - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < CONFIG.visual.projectileMissRadius) {
+              this.hit = true;
+              game.onProjectileMiss(this);
+              return false;
+            }
+          }
+
+          if (this.x < -50 || this.x > W + 50 || this.y < -50 || this.y > H + 50) {
+            return false;
+          }
+
+          return true;
+        }
+
+        draw() {
+          ctx.save();
+
+          const color = this.isHit ? CONFIG.colors.primary : CONFIG.colors.miss;
+          const glowColor = this.isHit ? CONFIG.colors.primary : CONFIG.colors.miss;
+
+          for (let i = 0; i < this.trail.length; i++) {
+            const t = this.trail[i];
+            ctx.globalAlpha = t.life * 0.6;
+            ctx.fillStyle = color;
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = 10;
+            const size = 2 + i * 0.5;
+            ctx.fillRect(t.x - size / 2, t.y - size / 2, size, size);
+          }
+
+          ctx.globalAlpha = 1;
+          ctx.font = 'bold 14px "Courier New", monospace';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = color;
+          ctx.shadowColor = glowColor;
+          ctx.shadowBlur = CONFIG.visual.projectileGlow;
+          ctx.fillText(this.word, this.x, this.y);
+
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.5;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.restore();
+        }
+      }
+
+      function drawGrid() {
+        ctx.strokeStyle = CONFIG.colors.primaryGrid;
+        ctx.lineWidth = 1;
+        const gridSize = CONFIG.visual.gridSize;
+        bgOffset = (bgOffset + CONFIG.visual.gridSpeed) % gridSize;
+        for (let x = 0; x <= W; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+        for (let y = bgOffset; y <= H; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+      }
+
+      class Enemy {
+        constructor() {
+          const isHeavy = Math.random() < CONFIG.game.heavyEnemyChanceBase + wave * CONFIG.game.heavyEnemyChancePerWave;
+          this.isHeavy = isHeavy;
+          const wordData = WordGenerator.generateWord(isHeavy);
+
+          if (isHeavy) {
+            this.words = wordData;
+            this.currentWordIndex = 0;
+            this.text = this.words[0];
+          } else {
+            this.words = [wordData];
+            this.currentWordIndex = 0;
+            this.text = wordData;
+          }
+
+          this.y = -40;
+          this.speed = isHeavy
+            ? CONFIG.game.heavyEnemySpeedBase + Math.random() * CONFIG.game.heavyEnemySpeedRandom
+            : CONFIG.game.simpleEnemySpeedBase +
+              Math.random() * CONFIG.game.simpleEnemySpeedRandom +
+              wave * CONFIG.game.simpleEnemySpeedPerWave;
+          this.height = isHeavy ? CONFIG.visual.enemyHeavyHeight : CONFIG.visual.enemySimpleHeight;
+          this.pulse = 0;
+          this.flashTimer = 0;
+          this.width = 0;
+          this.x = this._calculateSpawnX();
+        }
+
+        _calculateSpawnX() {
+          const padding = CONFIG.visual.enemyPaddingX;
+
+          ctx.save();
+          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? CONFIG.visual.enemyHeavyFont : CONFIG.visual.enemySimpleFont}px 'Courier New', monospace`;
+
+          let maxTextWidth = 0;
+          for (let word of this.words) {
+            const w = ctx.measureText(word).width;
+            if (w > maxTextWidth) maxTextWidth = w;
+          }
+          ctx.restore();
+
+          this.width = maxTextWidth + 24;
+          const halfWidth = this.width / 2;
+
+          const minX = padding + halfWidth;
+          const maxX = W - padding - halfWidth;
+
+          return minX + Math.random() * (maxX - minX);
+        }
+
+        nextWord() {
+          this.currentWordIndex++;
+          this.flashTimer = CONFIG.visual.flashDuration;
+          if (this.currentWordIndex >= this.words.length) {
+            return true;
+          }
+          this.text = this.words[this.currentWordIndex];
+          return false;
+        }
+
+        update() {
+          this.y += this.speed;
+          this.pulse += 0.05;
+          if (this.flashTimer > 0) this.flashTimer--;
+        }
+
+        draw() {
+          const glow = 5;
+          const alpha = 0.7 + Math.sin(this.pulse) * 0.3;
+          const flash = this.flashTimer > 0;
+
+          ctx.save();
+          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? CONFIG.visual.enemyHeavyFont : CONFIG.visual.enemySimpleFont}px 'Courier New', monospace`;
+          const textW = ctx.measureText(this.text).width;
+
+          const boxW = this.width;
+          const boxH = this.height;
+
+          ctx.shadowColor = flash ? CONFIG.colors.white : this.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
+          ctx.shadowBlur = flash ? 25 : glow + Math.sin(this.pulse * 2) * 5;
+
+          ctx.strokeStyle = flash
+            ? CONFIG.colors.white
+            : this.isHeavy
+              ? `rgba(255,170,0,${alpha})`
+              : `rgba(0,255,65,${alpha})`;
+          ctx.lineWidth = flash ? 3 : 1.5;
+
+          if (this.isHeavy) {
+            ctx.beginPath();
+            ctx.moveTo(this.x - boxW / 2 + 8, this.y - boxH / 2);
+            ctx.lineTo(this.x + boxW / 2 - 8, this.y - boxH / 2);
+            ctx.lineTo(this.x + boxW / 2, this.y);
+            ctx.lineTo(this.x + boxW / 2 - 8, this.y + boxH / 2);
+            ctx.lineTo(this.x - boxW / 2 + 8, this.y + boxH / 2);
+            ctx.lineTo(this.x - boxW / 2, this.y);
+            ctx.closePath();
+            ctx.stroke();
+
+            const barW = boxW - 10;
+            const barH = CONFIG.visual.enemyArmorBarHeight;
+            const totalLayers = this.words.length;
+            const remainingLayers = totalLayers - this.currentWordIndex;
+            ctx.fillStyle = CONFIG.colors.armorBarBg;
+            ctx.fillRect(this.x - barW / 2, this.y - boxH / 2 - CONFIG.visual.enemyArmorBarOffset, barW, barH);
+            ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.armorBarFill;
+            ctx.fillRect(
+              this.x - barW / 2,
+              this.y - boxH / 2 - CONFIG.visual.enemyArmorBarOffset,
+              barW * (remainingLayers / totalLayers),
+              barH,
+            );
+
+            ctx.font = '10px "Courier New", monospace';
+            ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.heavy;
+            ctx.textAlign = "center";
+            ctx.fillText(
+              `${CONFIG.texts.armorLabel} ${remainingLayers}/${totalLayers}`,
+              this.x,
+              this.y - boxH / 2 - CONFIG.visual.enemyArmorLabelOffset,
+            );
+          } else {
+            ctx.strokeRect(this.x - boxW / 2, this.y - boxH / 2, boxW, boxH);
+          }
+
+          ctx.shadowBlur = 0;
+          ctx.font = `${this.isHeavy ? "bold " : ""}${this.isHeavy ? CONFIG.visual.enemyHeavyFont : CONFIG.visual.enemySimpleFont}px 'Courier New', monospace`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          ctx.fillStyle = flash ? CONFIG.colors.white : this.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
+          ctx.fillText(this.text, this.x, this.y);
+
+          ctx.restore();
+        }
+
+        getBounds() {
+          return {
+            left: this.x - this.width / 2,
+            right: this.x + this.width / 2,
+            top: this.y - this.height / 2,
+            bottom: this.y + this.height / 2,
+          };
+        }
+      }
+
+      class Particle {
+        constructor(x, y, color) {
+          this.x = x;
+          this.y = y;
+          this.vx = (Math.random() - 0.5) * 6;
+          this.vy = (Math.random() - 0.5) * 6;
+          this.life = 1;
+          this.decay = 0.02 + Math.random() * 0.03;
+          this.color = color;
+          this.size = 2 + Math.random() * 3;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.life -= this.decay;
+          this.vx *= 0.98;
+          this.vy *= 0.98;
+        }
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.life;
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 8;
+          ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+          ctx.restore();
+        }
+      }
+
+      function spawnParticles(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle(x, y, color));
+        }
+      }
+
+      function triggerShake(amount, duration) {
+        shakeAmount = amount;
+        shakeTimer = duration;
+      }
+
+      function spawnEnemy() {
+        enemies.push(new Enemy());
+      }
+
+      function takeDamage() {
+        lives--;
+        document.getElementById("lives").textContent = lives;
+        triggerShake(CONFIG.visual.shakeDamage, CONFIG.visual.shakeDamageDuration);
+        document.getElementById("game-container").classList.add("glitch");
+        setTimeout(
+          () => document.getElementById("game-container").classList.remove("glitch"),
+          CONFIG.visual.glitchDuration,
+        );
+
+        if (lives <= 0) {
+          gameOver();
+        }
+      }
+
+      function gameOver() {
+        gameState = "gameover";
+        document.getElementById("final-score").textContent = score;
+        document.getElementById("gameover-screen").classList.remove("hidden");
+      }
+
+      function startGame() {
+        gameState = "playing";
+        score = CONFIG.game.startScore;
+        wave = CONFIG.game.startWave;
+        lives = CONFIG.game.startLives;
+        enemies = [];
+        particles = [];
+        projectiles = [];
+        spawnTimer = 0;
+        spawnInterval = CONFIG.game.spawnIntervalBase;
+        waveTimer = 0;
+        InputModule.clear();
+
+        document.getElementById("score").textContent = score;
+        document.getElementById("wave").textContent = wave;
+        document.getElementById("lives").textContent = lives;
+        document.getElementById("start-screen").classList.add("hidden");
+        document.getElementById("gameover-screen").classList.add("hidden");
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      //  UI INITIALIZATION
+      // ═══════════════════════════════════════════════════════════════
+      (function initUI() {
+        document.querySelector("#start-screen .screen-title").textContent = CONFIG.texts.startTitle;
+        document.getElementById("start-subtitle").textContent = CONFIG.texts.startSubtitle;
+        document.getElementById("gameover-title").textContent = CONFIG.texts.gameOverTitle;
+        document.getElementById("gameover-subtitle").textContent = CONFIG.texts.gameOverSubtitle;
+
+        document.querySelector("#ui-overlay .ui-text:nth-child(1)").innerHTML =
+          `${CONFIG.texts.scoreLabel} <span id="score">0</span>`;
+        document.querySelector("#ui-overlay .ui-text:nth-child(2)").innerHTML =
+          `${CONFIG.texts.waveLabel} <span id="wave">1</span>`;
+        document.querySelector("#ui-overlay .ui-text:nth-child(3)").innerHTML =
+          `${CONFIG.texts.livesLabel} <span id="lives">3</span>`;
+
+        document.querySelector("#gameover-screen .screen-subtitle").innerHTML =
+          `${CONFIG.texts.finalScoreLabel} <span id="final-score">0</span>`;
+      })();
+
+      // ═══════════════════════════════════════════════════════════════
+      //  LOCAL KEYBOARD BRIDGE
+      // ═══════════════════════════════════════════════════════════════
+      // (function () {
+      //   let buffer = "";
+
+      //   document.addEventListener("keydown", (e) => {
+      //     if (e.key === "Backspace") {
+      //       e.preventDefault();
+      //       buffer = buffer.slice(0, -1);
+      //       InputModule.updateDisplay(buffer);
+      //     } else if (e.key === "Enter") {
+      //       e.preventDefault();
+      //       const line = buffer;
+      //       buffer = "";
+      //       InputModule.submitLine(line);
+      //     } else if (e.key === "Escape") {
+      //       buffer = "";
+      //       InputModule.clear();
+      //     } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      //       buffer += e.key;
+      //       InputModule.updateDisplay(buffer);
+      //     }
+      //   });
+      // })();
+
+      // ═══════════════════════════════════════════════════════════════
+      //  TMI CHAT BRIDGE
+      // ═══════════════════════════════════════════════════════════════
+      const client = new tmi.Client({ channels: ["ku6ep_xboctuk"] });
+      client.connect();
+
+      client.on("message", (channel, tags, message, self) => {
+        InputModule.submitLine(message);
+      });
+
+      function update() {
+        if (gameState !== "playing") return;
+
+        spawnTimer++;
+        if (spawnTimer >= spawnInterval) {
+          spawnEnemy();
+          spawnTimer = 0;
+          spawnInterval = Math.max(
+            CONFIG.game.spawnIntervalMin,
+            CONFIG.game.spawnIntervalBase - wave * CONFIG.game.spawnIntervalDecayPerWave,
+          );
+        }
+
+        waveTimer++;
+        if (waveTimer >= CONFIG.game.waveInterval) {
+          wave++;
+          waveTimer = 0;
+          document.getElementById("wave").textContent = wave;
+          spawnInterval = Math.max(
+            CONFIG.game.spawnIntervalMin,
+            CONFIG.game.spawnIntervalBase - wave * CONFIG.game.spawnIntervalDecayPerWave,
+          );
+        }
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          const e = enemies[i];
+          e.update();
+
+          if (e.y > H - 60) {
+            takeDamage();
+            enemies.splice(i, 1);
+          }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          particles[i].update();
+          if (particles[i].life <= 0) particles.splice(i, 1);
+        }
+
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          const alive = projectiles[i].update();
+          if (!alive) {
+            projectiles.splice(i, 1);
+          }
+        }
+
+        if (shakeTimer > 0) {
+          shakeTimer--;
+          shakeAmount *= 0.9;
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        ctx.save();
+        if (shakeTimer > 0) {
+          ctx.translate((Math.random() - 0.5) * shakeAmount, (Math.random() - 0.5) * shakeAmount);
+        }
+
+        drawGrid();
+
+        for (let p of projectiles) p.draw();
+        for (let p of particles) p.draw();
+        for (let e of enemies) e.draw();
+
+        ctx.save();
+        ctx.fillStyle = CONFIG.colors.playerBase;
+        ctx.fillRect(0, H - 55, W, 55);
+        ctx.strokeStyle = CONFIG.colors.primary;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, H - 55);
+        ctx.lineTo(W, H - 55);
+        ctx.stroke();
+
+        ctx.fillStyle = CONFIG.colors.primary;
+        ctx.shadowColor = CONFIG.colors.primary;
+        ctx.shadowBlur = CONFIG.visual.playerGlow;
+        ctx.beginPath();
+        ctx.arc(W / 2, H - CONFIG.visual.playerY, CONFIG.visual.playerRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.restore();
+      }
+
+      function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      loop();
+    </script>
+  </body>
+</html>
