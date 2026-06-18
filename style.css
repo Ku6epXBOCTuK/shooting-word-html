@@ -135,3 +135,69 @@ body {
     transform: translate(2px, 1px);
   }
 }
+
+/* index.html */
+#channel-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(5, 5, 5, 0.95);
+  z-index: 20;
+  text-align: center;
+  gap: 16px;
+}
+#channel-form input {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-size: 18px;
+  padding: 10px 16px;
+  width: 260px;
+  text-align: center;
+  outline: none;
+  text-shadow: 0 0 8px #00ff41;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.15);
+}
+#channel-form input:focus {
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+#channel-form button {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  font-size: 16px;
+  padding: 8px 32px;
+  cursor: pointer;
+  text-shadow: 0 0 8px #00ff41;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.15);
+  transition: all 0.15s;
+  min-width: 220px;
+}
+#channel-form button:hover {
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+#game-link {
+  margin-top: 8px;
+  color: #00cc33;
+  font-size: 14px;
+  min-height: 20px;
+}
+#game-link.copied {
+  color: #00ff41;
+  text-shadow: 0 0 8px #00ff41;
+}
+.obs-note {
+  margin-top: 24px;
+  color: #00cc33;
+  font-size: 12px;
+  opacity: 0.6;
+  line-height: 1.6;
+  max-width: 300px;
+}
