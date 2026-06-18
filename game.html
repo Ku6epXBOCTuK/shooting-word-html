@@ -913,9 +913,11 @@
       // })();
 
       // ═══════════════════════════════════════════════════════════════
-      //  TMI CHAT BRIDGE
+      //  CHANNEL FROM URL & TMI CHAT BRIDGE
       // ═══════════════════════════════════════════════════════════════
-      const client = new tmi.Client({ channels: ["ku6ep_xboctuk"] });
+      const params = new URLSearchParams(location.search);
+      const channel = params.get("channel") || "ku6ep_xboctuk";
+      const client = new tmi.Client({ channels: [channel] });
       client.connect();
 
       client.on("message", (channel, tags, message, self) => {
