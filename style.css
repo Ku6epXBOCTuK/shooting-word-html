@@ -152,52 +152,64 @@ body {
   text-align: center;
   gap: 16px;
 }
+#channel-form .screen-title {
+  font-size: 40px;
+  text-shadow: 0 0 40px #00ff41;
+}
+#channel-form .screen-subtitle {
+  font-size: 18px;
+  color: #00ff41;
+  opacity: 1;
+  margin-bottom: 8px;
+}
 #channel-form input {
   background: transparent;
-  border: 1px solid #00ff41;
+  border: 2px solid #00ff41;
   color: #00ff41;
-  font-size: 18px;
-  padding: 10px 16px;
-  width: 260px;
+  font-size: 22px;
+  padding: 12px 20px;
+  width: 300px;
   text-align: center;
   outline: none;
-  text-shadow: 0 0 8px #00ff41;
-  box-shadow: 0 0 10px rgba(0, 255, 65, 0.15);
+  text-shadow: 0 0 12px #00ff41;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
 }
 #channel-form input:focus {
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
 }
 #channel-form button {
   background: transparent;
-  border: 1px solid #00ff41;
+  border: 2px solid #00ff41;
   color: #00ff41;
-  font-size: 16px;
-  padding: 8px 32px;
+  font-size: 18px;
+  padding: 10px 40px;
   cursor: pointer;
-  text-shadow: 0 0 8px #00ff41;
-  box-shadow: 0 0 10px rgba(0, 255, 65, 0.15);
+  text-shadow: 0 0 12px #00ff41;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
   transition: all 0.15s;
-  min-width: 220px;
+  min-width: 260px;
 }
 #channel-form button:hover {
   background: rgba(0, 255, 65, 0.1);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
 }
 #game-link {
   margin-top: 8px;
-  color: #00cc33;
-  font-size: 14px;
+  color: #00ff41;
+  font-size: 16px;
   min-height: 20px;
+  text-shadow: 0 0 8px #00ff41;
 }
 #game-link.copied {
   color: #00ff41;
-  text-shadow: 0 0 8px #00ff41;
+  text-shadow: 0 0 12px #00ff41;
 }
-.obs-note {
+#channel-form .obs-note {
   margin-top: 24px;
-  color: #00cc33;
-  font-size: 12px;
-  opacity: 0.6;
+  color: #00ff41;
+  font-size: 16px;
+  opacity: 0.8;
   line-height: 1.6;
-  max-width: 300px;
+  max-width: 340px;
+  text-shadow: 0 0 6px #00ff41;
 }
