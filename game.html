@@ -11,18 +11,17 @@
     <div id="game-container">
       <canvas id="game-canvas" width="500" height="950"></canvas>
 
-      <div id="ui-overlay">
+      <div id="ui-overlay" class="hidden">
         <span class="ui-text">SCORE: <span id="score">0</span></span>
         <span class="ui-text">WAVE: <span id="wave">1</span></span>
         <span class="ui-text">LIVES: <span id="lives">3</span></span>
       </div>
 
-      <div id="input-display">
+      <div id="input-display" class="hidden">
         <div id="typed-text"></div>
       </div>
 
-      <div id="start-screen">
-        <div class="screen-title">Shooting word</div>
+      <div id="start-screen" class="hidden">
         <div class="screen-subtitle" id="start-subtitle">Введи !play чтобы начать</div>
       </div>
 
@@ -379,6 +378,7 @@
         submitLine(text) {
           const line = text.trim().toLowerCase();
           if (!line) return;
+          if (introPlaying) return;
 
           if (line === CONFIG.commands.play) {
             if (gameState === "start" || gameState === "gameover") {
@@ -459,6 +459,8 @@
       let shakeTimer = 0;
       let shakeAmount = 0;
       let bgOffset = 0;
+      let gameLoopStarted = false;
+      let introPlaying = false;
 
       const game = {
         launchProjectile(word, targetEnemy, isHit) {
@@ -840,13 +842,30 @@
         }
       }
 
+      let gameOverTimeout = null;
+
       function gameOver() {
         gameState = "gameover";
         document.getElementById("final-score").textContent = score;
         document.getElementById("gameover-screen").classList.remove("hidden");
+        document.getElementById("gameover-subtitle").classList.add("hidden");
+
+        if (gameOverTimeout) clearTimeout(gameOverTimeout);
+        gameOverTimeout = setTimeout(() => {
+          gameOverTimeout = null;
+          document.getElementById("gameover-screen").classList.add("hidden");
+          document.getElementById("ui-overlay").classList.add("hidden");
+          document.getElementById("input-display").classList.add("hidden");
+          gameLoopStarted = false;
+          runIntro();
+        }, 10000);
       }
 
       function startGame() {
+        if (gameOverTimeout) {
+          clearTimeout(gameOverTimeout);
+          gameOverTimeout = null;
+        }
         gameState = "playing";
         score = CONFIG.game.startScore;
         wave = CONFIG.game.startWave;
@@ -864,13 +883,19 @@
         document.getElementById("lives").textContent = lives;
         document.getElementById("start-screen").classList.add("hidden");
         document.getElementById("gameover-screen").classList.add("hidden");
+        document.getElementById("ui-overlay").classList.remove("hidden");
+        document.getElementById("input-display").classList.remove("hidden");
+
+        if (!gameLoopStarted) {
+          gameLoopStarted = true;
+          loop();
+        }
       }
 
       // ═══════════════════════════════════════════════════════════════
       //  UI INITIALIZATION
       // ═══════════════════════════════════════════════════════════════
       (function initUI() {
-        document.querySelector("#start-screen .screen-title").textContent = CONFIG.texts.startTitle;
         document.getElementById("start-subtitle").textContent = CONFIG.texts.startSubtitle;
         document.getElementById("gameover-title").textContent = CONFIG.texts.gameOverTitle;
         document.getElementById("gameover-subtitle").textContent = CONFIG.texts.gameOverSubtitle;
@@ -1014,10 +1039,181 @@
       function loop() {
         update();
         draw();
-        requestAnimationFrame(loop);
+        if (gameLoopStarted) {
+          requestAnimationFrame(loop);
+        }
       }
 
-      loop();
+      // ═══════════════════════════════════════════════════════════════
+      //  INTRO ANIMATION — runs before the game and after game over
+      //  "SHOOTING WORLD" → 3 shots at 'L' → "SHOOTING WORD"
+      // ═══════════════════════════════════════════════════════════════
+      function runIntro() {
+        introPlaying = true;
+        const FONT_SIZE = 44;
+        const TEXT_Y = Math.round(H * 0.35);
+
+        ctx.save();
+        ctx.font = `bold ${FONT_SIZE}px "Courier New", monospace`;
+        const totalW = ctx.measureText("SHOOTING WORLD").width;
+        const worW = ctx.measureText("SHOOTING WOR").width;
+        const lW = ctx.measureText("L").width;
+        const dW = ctx.measureText("D").width;
+        const finalW = ctx.measureText("SHOOTING WORD").width;
+        ctx.restore();
+
+        const cx = W / 2;
+        // Center of the 'L' character in "SHOOTING WORLD"
+        const lTargetX = cx - totalW / 2 + worW + lW / 2;
+        const lTargetY = TEXT_Y;
+        const shooterX = cx;
+        const shooterY = H - 50;
+
+        let frame = 0;
+        let textAlpha = 0;
+        let p1 = []; // explosion particles
+        let shots = []; // { progress, trail[], done }
+
+        function drawPartialWorld(alpha, dSlide) {
+          ctx.save();
+          ctx.font = `bold ${FONT_SIZE}px "Courier New", monospace`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          // "SHOOTING WOR" - stays in place
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = CONFIG.colors.primary;
+          ctx.shadowColor = CONFIG.colors.primaryGlow;
+          ctx.shadowBlur = 25;
+          ctx.fillText("SHOOTING WOR", cx - totalW / 2 + worW / 2, TEXT_Y);
+
+          // "L" - fades out as D slides in
+          const lFade = Math.max(0, 1 - dSlide);
+          if (lFade > 0) {
+            ctx.globalAlpha = alpha * lFade;
+            ctx.fillText("L", cx - totalW / 2 + worW + lW / 2, TEXT_Y);
+          }
+
+          // "D" - slides left as L disappears
+          const dOffset = lW * dSlide;
+          ctx.globalAlpha = alpha;
+          ctx.fillText("D", cx - totalW / 2 + worW + lW + dW / 2 - dOffset, TEXT_Y);
+
+          ctx.restore();
+        }
+
+        function drawShotProjectile(s) {
+          const x = shooterX + (lTargetX - shooterX) * s.progress;
+          const y = shooterY + (lTargetY - shooterY) * s.progress;
+          ctx.save();
+
+          // Trail
+          for (let t of s.trail) {
+            ctx.globalAlpha = t.life * 0.5;
+            ctx.fillStyle = CONFIG.colors.primary;
+            ctx.shadowColor = CONFIG.colors.primary;
+            ctx.shadowBlur = 10;
+            ctx.fillRect(t.x - 2, t.y - 2, 4, 4);
+          }
+
+          // Projectile tip
+          if (!s.done) {
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = CONFIG.colors.primary;
+            ctx.shadowColor = CONFIG.colors.primary;
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        function introLoop() {
+          frame++;
+
+          // --- Phase 1: text fades in (frames 1-40) ---
+          if (frame <= 40) {
+            textAlpha = Math.min(1, frame / 40);
+          }
+
+          // --- Phase 2: three shots at the 'L' ---
+          // each shot travels ~22 frames at 0.045 progress/frame
+          if (frame === 45) shots.push({ progress: 0, trail: [], done: false });
+          if (frame === 70) shots.push({ progress: 0, trail: [], done: false });
+          if (frame === 95) shots.push({ progress: 0, trail: [], done: false });
+
+          for (let s of shots) {
+            if (s.done) continue;
+            s.progress = Math.min(1, s.progress + 0.045);
+
+            const x = shooterX + (lTargetX - shooterX) * s.progress;
+            const y = shooterY + (lTargetY - shooterY) * s.progress;
+
+            s.trail.push({ x, y, life: 1 });
+            if (s.trail.length > 10) s.trail.shift();
+            for (let t of s.trail) t.life -= 0.12;
+            s.trail = s.trail.filter(t => t.life > 0);
+
+            if (s.progress >= 1) {
+              s.done = true;
+              for (let i = 0; i < 18; i++) {
+                p1.push(new Particle(lTargetX, lTargetY, CONFIG.colors.primary));
+              }
+            }
+          }
+
+          // --- Phase 3: L fades out + D slides left (frames 122-172) ---
+          let dSlide = 0;
+          if (frame >= 122) {
+            dSlide = Math.min(1, (frame - 122) / 50);
+          }
+
+          // Update particles
+          for (let p of p1) p.update();
+          p1 = p1.filter(p => p.life > 0);
+
+          // --- Draw ---
+          ctx.clearRect(0, 0, W, H);
+          drawGrid();
+
+          // "SHOOTING WORLD" → "SHOOTING WORD" (L fades, D slides)
+          drawPartialWorld(textAlpha, dSlide);
+
+          // Shots
+          for (let s of shots) drawShotProjectile(s);
+
+          // Explosion particles
+          for (let p of p1) p.draw();
+
+          // --- Next frame or transition to game ---
+          if (frame < 180) {
+            requestAnimationFrame(introLoop);
+          } else {
+            // Cleanup intro particles
+            p1 = [];
+            introPlaying = false;
+            // Final freeze frame: "SHOOTING WORD" + subtitle on canvas
+            ctx.clearRect(0, 0, W, H);
+            drawGrid();
+            drawPartialWorld(1, 1);
+            ctx.save();
+            ctx.font = '16px "Courier New", monospace';
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = CONFIG.colors.primaryDim;
+            ctx.shadowColor = CONFIG.colors.primary;
+            ctx.shadowBlur = 10;
+            ctx.fillText(CONFIG.texts.startSubtitle, cx, TEXT_Y + 60);
+            ctx.restore();
+          }
+        }
+
+        // Small delay then launch intro
+        setTimeout(introLoop, 300);
+      }
+
+      runIntro();
     </script>
   </body>
 </html>
