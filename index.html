@@ -11,12 +11,12 @@
       <div id="channel-form">
         <div class="screen-title">SHOOTING WORD</div>
         <div class="screen-subtitle">Введите имя канала для игры</div>
-        <input type="text" id="channel-input" placeholder="ku6ep_xboctuk" autofocus />
+        <input type="text" id="channel-input" placeholder="Ku6ep_XBOCTuK" autofocus />
         <button id="copy-btn">СКОПИРОВАТЬ ССЫЛКУ</button>
         <div id="game-link"></div>
         <div class="obs-note">
           Вставь ссылку в OBS как источник браузера<br />
-          (500×950, прокрутка выкл.)
+          Желательно высоту побольше
         </div>
       </div>
     </div>
@@ -26,7 +26,7 @@
       const linkEl = document.getElementById("game-link");
 
       function copyLink() {
-        const name = input.value.trim().toLowerCase() || "ku6ep_xboctuk";
+        const name = input.value.trim().toLowerCase() || "Ku6ep_XBOCTuK";
         const url = `${location.origin}${location.pathname.replace(/\/[^/]*$/, "/")}game.html?channel=${encodeURIComponent(name)}`;
         navigator.clipboard.writeText(url).then(() => {
           linkEl.textContent = "СКОПИРОВАНО!";
