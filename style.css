@@ -111,6 +111,70 @@ body {
   margin-bottom: 30px;
   opacity: 0.8;
 }
+#player-stats {
+  margin-bottom: 20px;
+  width: 80%;
+  max-width: 400px;
+}
+.stats-section-title {
+  color: #00ff41;
+  font-size: 16px;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px #00ff41;
+}
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+  margin-bottom: 4px;
+  border-left: 2px solid #00ff41;
+  opacity: 0.8;
+}
+.stats-top1 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ff41;
+  border-left-width: 4px;
+  opacity: 1;
+  text-shadow: 0 0 12px #00ff41;
+}
+.stats-top2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #00dd33;
+  opacity: 0.9;
+}
+.stats-top3 {
+  font-size: 13px;
+  color: #00bb22;
+}
+.stats-place {
+  min-width: 28px;
+}
+.stats-name {
+  flex: 1;
+  text-align: left;
+  margin-left: 8px;
+}
+.stats-kills {
+  min-width: 24px;
+  text-align: right;
+}
+.stats-mazila {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #ff6644;
+  opacity: 0.85;
+}
+.mazila-title {
+  font-weight: bold;
+  text-shadow: 0 0 8px #ff6644;
+}
+.mazila-count {
+  opacity: 0.6;
+}
 .hidden {
   display: none !important;
 }

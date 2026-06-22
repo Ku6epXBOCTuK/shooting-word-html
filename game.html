@@ -28,6 +28,7 @@
       <div id="gameover-screen" class="hidden">
         <div class="screen-title" id="gameover-title">ЧАТ, ВЫ ПРОИГРАЛИ!</div>
         <div class="screen-subtitle">Final Score: <span id="final-score">0</span></div>
+        <div id="player-stats"></div>
         <div class="screen-subtitle" id="gameover-subtitle">Введи !play чтобы играть</div>
       </div>
     </div>
@@ -448,7 +449,7 @@
       const InputModule = {
         currentLine: "",
 
-        submitLine(text) {
+        submitLine(text, username) {
           const line = text.trim().toLowerCase();
           if (!line) return;
           if (introPlaying) return;
@@ -468,10 +469,10 @@
           const enemy = this.findEnemy(line);
 
           // АНИМАЦИЯ: слово вылетает из поля ввода, потом запускается снаряд
-          this.animateShoot(line, enemy);
+          this.animateShoot(line, enemy, username);
         },
 
-        animateShoot(line, enemy) {
+        animateShoot(line, enemy, username) {
           const el = document.getElementById("typed-text");
 
           // Добавляем CSS-класс для анимации вылета
@@ -484,9 +485,9 @@
             this.updateDisplay("");
 
             if (enemy) {
-              game.launchProjectile(line, enemy, true);
+              game.launchProjectile(line, enemy, true, username);
             } else {
-              game.launchProjectile(line, null, false);
+              game.launchProjectile(line, null, false, username);
             }
           }, S.inputShootDelay);
         },
@@ -656,9 +657,11 @@
       let gameLoopStarted = false;
       let introPlaying = false;
 
+      let playerStats = {};
+
       const game = {
-        launchProjectile(word, targetEnemy, isHit) {
-          projectiles.push(new Projectile(word, targetEnemy, isHit));
+        launchProjectile(word, targetEnemy, isHit, username) {
+          projectiles.push(new Projectile(word, targetEnemy, isHit, username));
         },
 
         onProjectileHit(projectile, enemy) {
@@ -667,6 +670,10 @@
           if (dead) {
             score += enemy.isHeavy ? CONFIG.game.scoreHeavy : CONFIG.game.scoreSimple;
             document.getElementById("score").textContent = score;
+            if (projectile.username) {
+              if (!playerStats[projectile.username]) playerStats[projectile.username] = { kills: 0, misses: 0 };
+              playerStats[projectile.username].kills++;
+            }
             this.destroyEnemy(enemy);
           } else {
             spawnParticles(enemy.x, enemy.y, CONFIG.colors.heavy, S.particleArmorBreak);
@@ -677,6 +684,10 @@
         onProjectileMiss(projectile) {
           spawnParticles(projectile.targetX, projectile.targetY, CONFIG.colors.miss, S.particleMiss);
           triggerShake(S.shakeMiss, S.shakeMissDuration);
+          if (projectile.username) {
+            if (!playerStats[projectile.username]) playerStats[projectile.username] = { kills: 0, misses: 0 };
+            playerStats[projectile.username].misses++;
+          }
         },
 
         destroyEnemy(enemy) {
@@ -696,9 +707,10 @@
       //  PROJECTILE — вылетает из поля ввода (низ экрана, центр)
       // ═══════════════════════════════════════════════════════════════
       class Projectile {
-        constructor(word, targetEnemy, isHit) {
+        constructor(word, targetEnemy, isHit, username) {
           this.word = word;
           this.isHit = isHit;
+          this.username = username;
           this.x = W / 2;
           this.y = H - S.shooterOffset;
           this.speed = S.projectileSpeed;
@@ -1040,9 +1052,50 @@
 
       let gameOverTimeout = null;
 
+      function renderPlayerStats() {
+        const container = document.getElementById("player-stats");
+        container.innerHTML = "";
+
+        const names = Object.keys(playerStats);
+        if (names.length === 0) return;
+
+        const byKills = names.slice().sort((a, b) => playerStats[b].kills - playerStats[a].kills);
+        const top3 = byKills.slice(0, 3);
+
+        const sectionTitle = document.createElement("div");
+        sectionTitle.className = "stats-section-title";
+        sectionTitle.textContent = "УБИЙЦЫ";
+        container.appendChild(sectionTitle);
+
+        top3.forEach((name, i) => {
+          const row = document.createElement("div");
+          row.className = "stats-row" + (i === 0 ? " stats-top1" : i === 1 ? " stats-top2" : " stats-top3");
+          const place = i === 0 ? "1" : i === 1 ? "2" : "3";
+          row.innerHTML = `<span class="stats-place">#${place}</span> <span class="stats-name">${name}</span> <span class="stats-kills">${playerStats[name].kills}</span>`;
+          container.appendChild(row);
+        });
+
+        let maxMisses = 0;
+        let mazilaName = "";
+        for (const name of names) {
+          if (playerStats[name].misses > maxMisses) {
+            maxMisses = playerStats[name].misses;
+            mazilaName = name;
+          }
+        }
+
+        if (mazilaName && maxMisses > 0) {
+          const mazila = document.createElement("div");
+          mazila.className = "stats-mazila";
+          mazila.innerHTML = `<span class="mazila-title">Мазила:</span> ${mazilaName} <span class="mazila-count">(${maxMisses})</span>`;
+          container.appendChild(mazila);
+        }
+      }
+
       function gameOver() {
         gameState = "gameover";
         document.getElementById("final-score").textContent = score;
+        renderPlayerStats();
         document.getElementById("gameover-screen").classList.remove("hidden");
         document.getElementById("gameover-subtitle").classList.add("hidden");
 
@@ -1070,6 +1123,7 @@
         enemies = [];
         particles = [];
         projectiles = [];
+        playerStats = {};
         spawnTimer = CONFIG.game.spawnIntervalBase;
         spawnInterval = CONFIG.game.spawnIntervalBase;
         waveTimer = 0;
@@ -1143,7 +1197,8 @@
       client.connect();
 
       client.on("message", (channel, tags, message, self) => {
-        InputModule.submitLine(message);
+        const username = tags["display-name"] || tags.username || "anonymous";
+        InputModule.submitLine(message, username);
       });
 
       function update() {
