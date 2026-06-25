@@ -36,7 +36,7 @@ const CONFIG = {
     fastEnemyCrossTimeCap: 10,
     fastEnemyCrossTimeCapWave: 50,
     bossCrossTime: 60,
-    projectileCrossTime: 1.3,
+    projectileCrossTime: 0.43,
     gridSpeed: 0.5,
   },
   visual: {

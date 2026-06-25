@@ -254,7 +254,7 @@ body {
   opacity: 1;
   margin-bottom: 8px;
 }
-#channel-form input {
+#channel-form input[type="text"] {
   background: transparent;
   border: 2px solid #00ff41;
   color: #00ff41;
@@ -266,7 +266,15 @@ body {
   text-shadow: 0 0 12px #00ff41;
   box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
 }
-#channel-form input:focus {
+#channel-form input[type="text"]:focus {
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+}
+#channel-form input[type="checkbox"] {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+#channel-form input:not([type="checkbox"]):focus {
   box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
 }
 #settings-panel {
@@ -277,7 +285,7 @@ body {
 }
 .settings-label {
   color: #00cc33;
-  font-size: 14px;
+  font-size: 28px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -289,10 +297,11 @@ body {
   opacity: 1;
 }
 .settings-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
   accent-color: #00ff41;
   cursor: pointer;
+  margin-right: 12px;
 }
 #channel-form button {
   background: transparent;
@@ -322,10 +331,36 @@ body {
   text-shadow: 0 0 12px #00ff41;
 }
 #channel-form .obs-note {
-  margin-top: 24px;
+  margin-top: 32px;
   color: #00ff41;
-  font-size: 16px;
+  font-size: 28px;
   opacity: 0.8;
   line-height: 1.6;
   text-shadow: 0 0 6px #00ff41;
+}
+.links-row {
+  display: flex;
+  gap: 40px;
+  margin-top: 16px;
+}
+.page-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ff41;
+  font-size: 22px;
+  text-decoration: none;
+  text-shadow: 0 0 10px #00ff41;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.link-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #00ff41;
+}
+.page-link:hover {
+  opacity: 1;
+  text-shadow: 0 0 16px #00ff41;
 }
