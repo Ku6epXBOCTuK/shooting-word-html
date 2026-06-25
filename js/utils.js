@@ -1,3 +1,21 @@
+function crossTimeToSpeed(crossTimeSec) {
+  const playH = H - S.removeZone;
+  return playH / (crossTimeSec * 60);
+}
+
+function getEnemyCrossTime(type) {
+  const SP = CONFIG.speed;
+  if (type === "slow") {
+    const t = Math.min(wave / SP.slowEnemyCrossTimeCapWave, 1);
+    return SP.slowEnemyCrossTimeStart - (SP.slowEnemyCrossTimeStart - SP.slowEnemyCrossTimeCap) * t;
+  }
+  if (type === "fast") {
+    const t = Math.min(wave / SP.fastEnemyCrossTimeCapWave, 1);
+    return SP.fastEnemyCrossTimeStart - (SP.fastEnemyCrossTimeStart - SP.fastEnemyCrossTimeCap) * t;
+  }
+  return SP.bossCrossTime;
+}
+
 let S = {};
 
 function recalc() {
@@ -36,16 +54,8 @@ function recalc() {
     S[k] = Math.round(V[k] * H / 1000);
   }
 
-  const SP = CONFIG.speed;
-  const playH = H - S.removeZone;
-  S.simpleEnemySpeedBase = playH / (SP.simpleEnemyCrossTime * 60);
-  S.simpleEnemySpeedRandom = playH / (SP.simpleEnemyCrossTimeRand * 60);
-  S.simpleEnemySpeedPerWave = playH / (SP.simpleEnemyCrossTimeDecay * 60);
-  S.simpleEnemyMaxSpeed = playH / (15 * 60);
-  S.heavyEnemySpeedBase = playH / (SP.heavyEnemyCrossTime * 60);
-  S.heavyEnemySpeedRandom = playH / (SP.heavyEnemyCrossTimeRand * 60);
-  S.projectileSpeed = H / (SP.projectileCrossTime * 60);
-  S.gridSpeed = SP.gridSpeed * H / 1000;
+  S.projectileSpeed = H / (CONFIG.speed.projectileCrossTime * 60);
+  S.gridSpeed = CONFIG.speed.gridSpeed * H / 1000;
 
   for (const k of ["projectileTrailLength","particleHit","particleMiss",
     "particleDestroySimple","particleDestroyHeavy","particleArmorBreak",

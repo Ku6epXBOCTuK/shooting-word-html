@@ -10,8 +10,11 @@ let enemies = [];
 let particles = [];
 let projectiles = [];
 let spawnTimer = 0;
-let spawnInterval = CONFIG.game.spawnIntervalBase;
+let waveEnemiesLeft = 0;
 let waveTimer = 0;
+let wavePauseTimer = 0;
+let wavePauseText = "";
+let wavePauseActive = false;
 let shakeTimer = 0;
 let shakeAmount = 0;
 let bgOffset = 0;
@@ -55,10 +58,10 @@ const game = {
   },
 
   onProjectileHit(projectile, enemy) {
-    const dead = enemy.nextWord();
+    const dead = enemy.hitWord(projectile.word);
 
     if (dead) {
-      score += enemy.isHeavy ? CONFIG.game.scoreHeavy : CONFIG.game.scoreSimple;
+      score += enemy.isBoss ? CONFIG.game.scoreBoss : enemy.isHeavy ? CONFIG.game.scoreHeavy : CONFIG.game.scoreSimple;
       document.getElementById("score").textContent = score;
       if (projectile.username) {
         if (!playerStats[projectile.username]) playerStats[projectile.username] = { kills: 0, misses: 0 };
@@ -66,7 +69,8 @@ const game = {
       }
       this.destroyEnemy(enemy);
     } else {
-      spawnParticles(enemy.x, enemy.y, CONFIG.colors.heavy, S.particleArmorBreak);
+      const color = enemy.isBoss ? "#ff4444" : CONFIG.colors.heavy;
+      spawnParticles(enemy.x, enemy.y, color, S.particleArmorBreak);
       triggerShake(S.shakeHit, S.shakeHitDuration);
     }
   },
@@ -83,10 +87,12 @@ const game = {
   destroyEnemy(enemy) {
     const idx = enemies.indexOf(enemy);
     if (idx > -1) {
-      const color = enemy.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
-      const count = enemy.isHeavy
-        ? S.particleDestroyHeavy
-        : S.particleDestroySimple;
+      const color = enemy.isBoss ? "#ff4444" : enemy.isHeavy ? CONFIG.colors.heavy : CONFIG.colors.primary;
+      const count = enemy.isBoss
+        ? S.particleDestroyHeavy * 2
+        : enemy.isHeavy
+          ? S.particleDestroyHeavy
+          : S.particleDestroySimple;
       spawnParticles(enemy.x, enemy.y, color, count);
       enemies.splice(idx, 1);
     }
@@ -95,6 +101,14 @@ const game = {
 
 function spawnEnemy() {
   enemies.push(new Enemy());
+}
+
+function spawnBoss() {
+  enemies.push(new Enemy(true));
+}
+
+function getEnemiesPerWave() {
+  return CONFIG.game.enemiesPerWaveBase + (wave - 1) * CONFIG.game.enemiesPerWaveInc;
 }
 
 function takeDamage() {
@@ -190,9 +204,10 @@ function startGame() {
   particles = [];
   projectiles = [];
   playerStats = {};
-  spawnTimer = CONFIG.game.spawnIntervalBase;
-  spawnInterval = CONFIG.game.spawnIntervalBase;
+  spawnTimer = 0;
+  waveEnemiesLeft = getEnemiesPerWave();
   waveTimer = 0;
+  wavePauseActive = false;
   InputModule.clear();
 
   document.getElementById("score").textContent = score;
@@ -212,25 +227,35 @@ function startGame() {
 function update() {
   if (gameState !== "playing") return;
 
-  spawnTimer++;
-  if (spawnTimer >= spawnInterval) {
-    spawnEnemy();
-    spawnTimer = 0;
-    spawnInterval = Math.max(
-      CONFIG.game.spawnIntervalMin,
-      CONFIG.game.spawnIntervalBase - wave * CONFIG.game.spawnIntervalDecayPerWave,
-    );
+  if (wavePauseActive) {
+    wavePauseTimer--;
+    if (wavePauseTimer <= 0) {
+      wavePauseActive = false;
+      waveEnemiesLeft = getEnemiesPerWave();
+      if (wave % CONFIG.game.bossEveryNthWave === 0) {
+        spawnBoss();
+      }
+    }
+  } else if (waveEnemiesLeft > 0) {
+    spawnTimer++;
+    const spawnInterval = CONFIG.game.waveInterval / getEnemiesPerWave();
+    if (spawnTimer >= spawnInterval) {
+      spawnEnemy();
+      waveEnemiesLeft--;
+      spawnTimer = 0;
+    }
   }
 
   waveTimer++;
-  if (waveTimer >= CONFIG.game.waveInterval) {
+  if (waveTimer >= CONFIG.game.waveInterval && !wavePauseActive && waveEnemiesLeft <= 0) {
     wave++;
     waveTimer = 0;
     document.getElementById("wave").textContent = wave;
-    spawnInterval = Math.max(
-      CONFIG.game.spawnIntervalMin,
-      CONFIG.game.spawnIntervalBase - wave * CONFIG.game.spawnIntervalDecayPerWave,
-    );
+    wavePauseActive = true;
+    wavePauseTimer = 120;
+    wavePauseText = wave % CONFIG.game.bossEveryNthWave === 0
+      ? `BOSS INCOMING`
+      : `WAVE ${wave} INCOMING`;
   }
 
   for (let i = enemies.length - 1; i >= 0; i--) {
@@ -274,6 +299,20 @@ function draw() {
   for (let p of projectiles) p.draw();
   for (let p of particles) p.draw();
   for (let e of enemies) e.draw();
+
+  if (wavePauseActive) {
+    const alpha = wavePauseTimer > 30 ? 1 : wavePauseTimer / 30;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = `bold ${Math.round(36 * H / 1000)}px "Courier New", monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = wavePauseText === "BOSS INCOMING" ? "#ff4444" : CONFIG.colors.primary;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 20;
+    ctx.fillText(wavePauseText, W / 2, S.inputAreaHeight + 40);
+    ctx.restore();
+  }
 
   ctx.save();
   ctx.fillStyle = CONFIG.colors.playerBase;

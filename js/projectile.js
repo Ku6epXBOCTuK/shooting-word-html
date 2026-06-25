@@ -48,6 +48,11 @@ class Projectile {
       const dy = this.target.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
+      if (dist > 0) {
+        this.vx = (dx / dist) * this.speed;
+        this.vy = (dy / dist) * this.speed;
+      }
+
       if (dist < S.projectileHitRadius) {
         this.hit = true;
         game.onProjectileHit(this, this.target);

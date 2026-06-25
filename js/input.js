@@ -76,8 +76,15 @@ const InputModule = {
 
   findEnemy(word) {
     for (let e of enemies) {
-      if (e.text === word) {
-        return e;
+      if (e.isBoss) {
+        const layer = e.layers[e.currentLayer];
+        if (layer && layer.includes(word) && !e.killedInLayer.has(word)) {
+          return e;
+        }
+      } else {
+        if (e.text === word) {
+          return e;
+        }
       }
     }
     return null;
