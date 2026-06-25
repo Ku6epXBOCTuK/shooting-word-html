@@ -20,6 +20,35 @@ let introPlaying = false;
 
 let playerStats = {};
 
+const params = new URLSearchParams(location.search);
+const settings = {
+  autoRestart: params.get("autoRestart") !== "0",
+};
+
+function initKeyboardBridge() {
+  if (initKeyboardBridge._done) return;
+  initKeyboardBridge._done = true;
+  let buffer = "";
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      buffer = buffer.slice(0, -1);
+      InputModule.updateLocalDisplay(buffer);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const line = buffer;
+      buffer = "";
+      InputModule.submitLocal(line);
+    } else if (e.key === "Escape") {
+      buffer = "";
+      InputModule.clear();
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      buffer += e.key;
+      InputModule.updateLocalDisplay(buffer);
+    }
+  });
+}
+
 const game = {
   launchProjectile(word, targetEnemy, isHit, username) {
     projectiles.push(new Projectile(word, targetEnemy, isHit, username));
@@ -137,11 +166,15 @@ function gameOver() {
     gameOverTimeout = null;
     document.getElementById("gameover-screen").classList.add("hidden");
     document.getElementById("ui-overlay").classList.add("hidden");
-    document.getElementById("input-display").classList.add("hidden");
+    document.getElementById("input-chat").classList.add("hidden");
     gameLoopStarted = false;
-    recalc();
-    runIntro();
-  }, 10000);
+    if (settings.autoRestart) {
+      recalc();
+      runIntro();
+    } else {
+      document.body.classList.add("hidden");
+    }
+  }, CONFIG.game.gameOverDelay);
 }
 
 function startGame() {
@@ -168,7 +201,7 @@ function startGame() {
   document.getElementById("start-screen").classList.add("hidden");
   document.getElementById("gameover-screen").classList.add("hidden");
   document.getElementById("ui-overlay").classList.remove("hidden");
-  document.getElementById("input-display").classList.remove("hidden");
+  document.getElementById("input-chat").classList.remove("hidden");
 
   if (!gameLoopStarted) {
     gameLoopStarted = true;

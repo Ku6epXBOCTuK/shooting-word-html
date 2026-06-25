@@ -70,10 +70,20 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 14px 16px;
+  display: flex;
   background: rgba(0, 0, 0, 0.85);
   border-top: 1px solid #00ff41;
   z-index: 5;
+}
+#input-local {
+  flex: 1;
+  padding: 14px 16px;
+  border-right: 1px solid #00ff41;
+  text-align: center;
+}
+#input-chat {
+  flex: 1;
+  padding: 14px 16px;
   text-align: center;
 }
 #typed-text {
@@ -82,6 +92,14 @@ body {
   min-height: 28px;
   letter-spacing: 2px;
   text-shadow: 0 0 10px #00ff41;
+}
+#chat-text {
+  color: #00cc33;
+  font-size: 16px;
+  min-height: 28px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px #00cc33;
+  opacity: 0.8;
 }
 #start-screen,
 #gameover-screen {
@@ -240,6 +258,31 @@ body {
 }
 #channel-form input:focus {
   box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+}
+#settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.settings-label {
+  color: #00cc33;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+  text-shadow: 0 0 6px #00ff41;
+}
+.settings-label:hover {
+  opacity: 1;
+}
+.settings-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #00ff41;
+  cursor: pointer;
 }
 #channel-form button {
   background: transparent;

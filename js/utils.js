@@ -87,6 +87,11 @@ function applyOverlayScale(W, H) {
     typed.style.fontSize = Math.round(20 * H / 1000) + "px";
     typed.style.minHeight = Math.round(28 * H / 1000) + "px";
   }
+  const chatText = document.getElementById("chat-text");
+  if (chatText) {
+    chatText.style.fontSize = Math.round(16 * H / 1000) + "px";
+    chatText.style.minHeight = Math.round(28 * H / 1000) + "px";
+  }
   const chForm = document.getElementById("channel-form");
   if (chForm) {
     chForm.querySelector(".screen-title").style.fontSize = Math.round(80 * H / 1000) + "px";

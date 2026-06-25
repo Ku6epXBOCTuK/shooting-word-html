@@ -14,8 +14,9 @@
     `${CONFIG.texts.finalScoreLabel} <span id="final-score">0</span>`;
 })();
 
-const params = new URLSearchParams(location.search);
-const channel = params.get("channel") || "ku6ep_xboctuk";
+const gameParams = new URLSearchParams(location.search);
+const channel = gameParams.get("channel") || "ku6ep_xboctuk";
+const channelName = channel;
 const client = new tmi.Client({ channels: [channel] });
 client.connect();
 
@@ -23,6 +24,8 @@ client.on("message", (channel, tags, message, self) => {
   const username = tags["display-name"] || tags.username || "anonymous";
   InputModule.submitLine(message, username);
 });
+
+initKeyboardBridge();
 
 window.addEventListener("resize", recalc);
 recalc();

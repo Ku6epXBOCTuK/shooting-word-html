@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shooting word</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="tmi.min.js"></script>
+    <script src="js/tmi.min.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -17,8 +17,13 @@
         <span class="ui-text">LIVES: <span id="lives">3</span></span>
       </div>
 
-      <div id="input-display" class="hidden">
-        <div id="typed-text"></div>
+      <div id="input-display">
+        <div id="input-local">
+          <div id="typed-text"></div>
+        </div>
+        <div id="input-chat" class="hidden">
+          <div id="chat-text"></div>
+        </div>
       </div>
 
       <div id="start-screen" class="hidden">

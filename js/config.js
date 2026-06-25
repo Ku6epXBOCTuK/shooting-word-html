@@ -23,6 +23,7 @@ const CONFIG = {
     heavyEnemyChancePerWave: 0.02,
     scoreSimple: 10,
     scoreHeavy: 50,
+    gameOverDelay: 10000,
   },
   speed: {
     simpleEnemyCrossTime: 60,
