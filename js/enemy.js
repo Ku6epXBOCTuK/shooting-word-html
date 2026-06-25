@@ -114,14 +114,16 @@ class Enemy {
         barH,
       );
 
-      ctx.font = `${S.armorBarFont}px "Courier New", monospace`;
-      ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.heavy;
-      ctx.textAlign = "center";
-      ctx.fillText(
-        `${CONFIG.texts.armorLabel} ${remainingLayers}/${totalLayers}`,
-        this.x,
-        this.y - boxH / 2 - S.enemyArmorLabelOffset,
-      );
+      if (wave <= 5) {
+        ctx.font = `${S.armorBarFont}px "Courier New", monospace`;
+        ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.heavy;
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `${CONFIG.texts.armorLabel} ${remainingLayers}/${totalLayers}`,
+          this.x,
+          this.y - boxH / 2 - S.enemyArmorLabelOffset,
+        );
+      }
     } else {
       ctx.strokeRect(this.x - boxW / 2, this.y - boxH / 2, boxW, boxH);
     }
