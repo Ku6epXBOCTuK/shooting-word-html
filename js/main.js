@@ -8,7 +8,7 @@
   document.querySelector("#ui-overlay .ui-text:nth-child(2)").innerHTML =
     `${CONFIG.texts.waveLabel} <span id="wave">1</span>`;
   document.querySelector("#ui-overlay .ui-text:nth-child(3)").innerHTML =
-    `${CONFIG.texts.livesLabel} <span id="lives">3</span>`;
+    `${CONFIG.texts.livesLabel} <span id="lives">${"♥".repeat(CONFIG.game.startLives)}</span>`;
 
   document.querySelector("#gameover-screen .screen-subtitle").innerHTML =
     `${CONFIG.texts.finalScoreLabel} <span id="final-score">0</span>`;

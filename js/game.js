@@ -113,7 +113,7 @@ function getEnemiesPerWave() {
 
 function takeDamage() {
   lives--;
-  document.getElementById("lives").textContent = lives;
+  document.getElementById("lives").textContent = "♡".repeat(CONFIG.game.startLives - lives) + "♥".repeat(lives);
   triggerShake(S.shakeDamage, S.shakeDamageDuration);
   document.getElementById("game-container").classList.add("glitch");
   setTimeout(
@@ -213,7 +213,7 @@ function startGame() {
 
   document.getElementById("score").textContent = score;
   document.getElementById("wave").textContent = wave;
-  document.getElementById("lives").textContent = lives;
+  document.getElementById("lives").textContent = "♡".repeat(CONFIG.game.startLives - lives) + "♥".repeat(lives);
   document.getElementById("start-screen").classList.add("hidden");
   document.getElementById("gameover-screen").classList.add("hidden");
   document.getElementById("ui-overlay").classList.remove("hidden");
@@ -317,15 +317,6 @@ function draw() {
   }
 
   ctx.save();
-  ctx.fillStyle = CONFIG.colors.playerBase;
-  ctx.fillRect(0, H - S.inputAreaHeight, W, S.inputAreaHeight);
-  ctx.strokeStyle = CONFIG.colors.primary;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, H - S.inputAreaHeight);
-  ctx.lineTo(W, H - S.inputAreaHeight);
-  ctx.stroke();
-
   ctx.fillStyle = CONFIG.colors.primary;
   ctx.shadowColor = CONFIG.colors.primary;
   ctx.shadowBlur = S.playerGlow;
