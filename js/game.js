@@ -25,7 +25,7 @@ let playerStats = {};
 
 const params = new URLSearchParams(location.search);
 const settings = {
-  autoRestart: params.get("autoRestart") !== "0",
+  singlePlay: params.get("singlePlay") === "1",
 };
 
 function initKeyboardBridge() {
@@ -183,7 +183,7 @@ function gameOver() {
     document.getElementById("ui-overlay").classList.add("hidden");
     document.getElementById("input-chat").classList.add("hidden");
     gameLoopStarted = false;
-    if (settings.autoRestart) {
+    if (!settings.singlePlay) {
       recalc();
       runIntro();
     } else {
