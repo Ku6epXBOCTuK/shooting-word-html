@@ -298,7 +298,8 @@ function draw() {
 
   for (let p of projectiles) p.draw();
   for (let p of particles) p.draw();
-  for (let e of enemies) e.draw();
+  const sortedEnemies = enemies.slice().sort((a, b) => a.speed - b.speed);
+  for (let e of sortedEnemies) e.draw();
 
   if (wavePauseActive) {
     const alpha = wavePauseTimer > 30 ? 1 : wavePauseTimer / 30;

@@ -151,6 +151,8 @@ class Enemy {
       ctx.lineTo(this.x - boxW / 2, this.y + boxH / 2 - off);
       ctx.lineTo(this.x - boxW / 2, this.y - boxH / 2 + off);
       ctx.closePath();
+      ctx.fillStyle = flash ? "#ffffff" : "#0a0a0a";
+      ctx.fill();
       ctx.stroke();
 
       const barW = boxW - S.armorBarPad;
@@ -228,6 +230,8 @@ class Enemy {
       ctx.lineTo(this.x - boxW / 2 + off, this.y + boxH / 2);
       ctx.lineTo(this.x - boxW / 2, this.y);
       ctx.closePath();
+      ctx.fillStyle = flash ? "#ffffff" : "#0a0a0a";
+      ctx.fill();
       ctx.stroke();
 
       const barW = boxW - S.armorBarPad;
@@ -262,6 +266,8 @@ class Enemy {
       ctx.fillStyle = flash ? CONFIG.colors.white : CONFIG.colors.heavy;
       ctx.fillText(this.text, this.x, this.y);
     } else {
+      ctx.fillStyle = flash ? "#ffffff" : "#0a0a0a";
+      ctx.fillRect(this.x - boxW / 2, this.y - boxH / 2, boxW, boxH);
       ctx.strokeRect(this.x - boxW / 2, this.y - boxH / 2, boxW, boxH);
 
       ctx.shadowBlur = 0;
