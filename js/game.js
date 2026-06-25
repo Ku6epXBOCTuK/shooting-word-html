@@ -146,8 +146,9 @@ function renderPlayerStats() {
   top3.forEach((name, i) => {
     const row = document.createElement("div");
     row.className = "stats-row" + (i === 0 ? " stats-top1" : i === 1 ? " stats-top2" : " stats-top3");
+    const crown = i === 0 ? '<span class="stats-crown">👑</span> ' : "";
     const place = i === 0 ? "1" : i === 1 ? "2" : "3";
-    row.innerHTML = `<span class="stats-place">#${place}</span> <span class="stats-name">${name}</span> <span class="stats-kills">${playerStats[name].kills}</span>`;
+    row.innerHTML = `<span class="stats-place">#${place}</span> ${crown}<span class="stats-name">${name}</span> <span class="stats-kills">${playerStats[name].kills}</span>`;
     container.appendChild(row);
   });
 

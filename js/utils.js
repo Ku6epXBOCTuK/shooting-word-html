@@ -123,7 +123,23 @@ function applyOverlayScale(W, H) {
     if (note) note.style.fontSize = Math.round(16 * H / 1000) + "px";
   }
   const goTitle = document.getElementById("gameover-title");
-  if (goTitle) goTitle.style.fontSize = Math.round(32 * H / 1000) + "px";
+  if (goTitle) goTitle.style.fontSize = Math.round(64 * H / 1000) + "px";
+  const goSubs = document.querySelectorAll("#gameover-screen .screen-subtitle");
+  for (let el of goSubs) el.style.fontSize = Math.round(28 * H / 1000) + "px";
+  const statsTitle = document.querySelectorAll(".stats-section-title");
+  for (let el of statsTitle) el.style.fontSize = Math.round(28 * H / 1000) + "px";
+  const statsTop1 = document.querySelectorAll(".stats-top1");
+  for (let el of statsTop1) el.style.fontSize = Math.round(48 * H / 1000) + "px";
+  const statsTop2 = document.querySelectorAll(".stats-top2");
+  for (let el of statsTop2) el.style.fontSize = Math.round(36 * H / 1000) + "px";
+  const statsTop3 = document.querySelectorAll(".stats-top3");
+  for (let el of statsTop3) el.style.fontSize = Math.round(28 * H / 1000) + "px";
+  const statsRow = document.querySelectorAll(".stats-row:not(.stats-top1):not(.stats-top2):not(.stats-top3)");
+  for (let el of statsRow) el.style.fontSize = Math.round(24 * H / 1000) + "px";
+  const mazila = document.querySelectorAll(".stats-mazila");
+  for (let el of mazila) el.style.fontSize = Math.round(28 * H / 1000) + "px";
+  const crown = document.querySelectorAll(".stats-crown");
+  for (let el of crown) el.style.fontSize = Math.round(56 * H / 1000) + "px";
 }
 
 function drawGrid() {
