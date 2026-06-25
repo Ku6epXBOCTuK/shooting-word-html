@@ -3,7 +3,7 @@ const InputModule = {
   localBuffer: "",
 
   submitLine(text, username) {
-    const line = text.trim().toLowerCase();
+    const line = text.trim().toLowerCase().split(/\s+/)[0];
     if (!line) return;
     if (introPlaying) return;
 
@@ -25,7 +25,7 @@ const InputModule = {
   },
 
   submitLocal(text) {
-    const line = text.trim().toLowerCase();
+    const line = text.trim().toLowerCase().split(/\s+/)[0];
     if (!line) return;
     if (introPlaying) return;
 

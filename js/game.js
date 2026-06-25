@@ -42,6 +42,7 @@ function initKeyboardBridge() {
       const line = buffer;
       buffer = "";
       InputModule.submitLocal(line);
+      InputModule.updateLocalDisplay("");
     } else if (e.key === "Escape") {
       buffer = "";
       InputModule.clear();
