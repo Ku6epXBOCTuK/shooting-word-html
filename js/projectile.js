@@ -36,12 +36,12 @@ class Projectile {
     if (this.trail.length > S.projectileTrailLength) this.trail.shift();
 
     for (let t of this.trail) {
-      t.life -= S.projectileTrailDecay;
+      t.life -= S.projectileTrailDecay * frameFactor;
     }
     this.trail = this.trail.filter((t) => t.life > 0);
 
-    this.x += this.vx;
-    this.y += this.vy;
+    this.x += this.vx * frameFactor;
+    this.y += this.vy * frameFactor;
 
     if (this.isHit && this.target && !this.hit) {
       const dx = this.target.x - this.x;

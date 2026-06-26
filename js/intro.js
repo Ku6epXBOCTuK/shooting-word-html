@@ -83,27 +83,30 @@ function runIntro() {
     ctx.restore();
   }
 
-  function introLoop() {
-    frame++;
+  function introLoop(timestamp) {
+    calcDt(timestamp);
+    const prevFrame = Math.floor(frame);
+    frame += frameFactor;
+    const curFrame = Math.floor(frame);
 
     if (frame <= I.fadeInFrames) {
       textAlpha = Math.min(1, frame / I.fadeInFrames);
     }
 
-    if (frame === I.shot1Frame) shots.push({ progress: 0, trail: [], done: false });
-    if (frame === I.shot2Frame) shots.push({ progress: 0, trail: [], done: false });
-    if (frame === I.shot3Frame) shots.push({ progress: 0, trail: [], done: false });
+    if (prevFrame < I.shot1Frame && curFrame >= I.shot1Frame) shots.push({ progress: 0, trail: [], done: false });
+    if (prevFrame < I.shot2Frame && curFrame >= I.shot2Frame) shots.push({ progress: 0, trail: [], done: false });
+    if (prevFrame < I.shot3Frame && curFrame >= I.shot3Frame) shots.push({ progress: 0, trail: [], done: false });
 
     for (let s of shots) {
       if (s.done) continue;
-      s.progress = Math.min(1, s.progress + I.shotSpeed);
+      s.progress = Math.min(1, s.progress + I.shotSpeed * frameFactor);
 
       const x = shooterX + (lTargetX - shooterX) * s.progress;
       const y = shooterY + (lTargetY - shooterY) * s.progress;
 
       s.trail.push({ x, y, life: 1 });
       if (s.trail.length > I.trailMax) s.trail.shift();
-      for (let t of s.trail) t.life -= I.trailDecay;
+      for (let t of s.trail) t.life -= I.trailDecay * frameFactor;
       s.trail = s.trail.filter((t) => t.life > 0);
 
       if (s.progress >= 1) {

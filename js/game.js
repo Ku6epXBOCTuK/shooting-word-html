@@ -230,7 +230,7 @@ function update() {
   if (gameState !== "playing") return;
 
   if (wavePauseActive) {
-    wavePauseTimer--;
+    wavePauseTimer -= frameFactor;
     if (wavePauseTimer <= 0) {
       wavePauseActive = false;
       waveEnemiesLeft = getEnemiesPerWave();
@@ -239,7 +239,7 @@ function update() {
       }
     }
   } else if (waveEnemiesLeft > 0) {
-    spawnTimer++;
+    spawnTimer += frameFactor;
     const spawnInterval = CONFIG.game.waveInterval / getEnemiesPerWave();
     if (spawnTimer >= spawnInterval) {
       spawnEnemy();
@@ -248,7 +248,7 @@ function update() {
     }
   }
 
-  waveTimer++;
+  waveTimer += frameFactor;
   if (waveTimer >= CONFIG.game.waveInterval && !wavePauseActive && waveEnemiesLeft <= 0) {
     wave++;
     waveTimer = 0;
@@ -283,7 +283,7 @@ function update() {
   }
 
   if (shakeTimer > 0) {
-    shakeTimer--;
+    shakeTimer -= frameFactor;
     shakeAmount *= 0.9;
   }
 }
@@ -329,7 +329,8 @@ function draw() {
   ctx.restore();
 }
 
-function loop() {
+function loop(timestamp) {
+  calcDt(timestamp);
   update();
   draw();
   if (gameLoopStarted) {

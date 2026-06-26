@@ -112,9 +112,9 @@ class Enemy {
   }
 
   update() {
-    this.y += this.speed;
-    this.pulse += 0.05;
-    if (this.flashTimer > 0) this.flashTimer--;
+    this.y += this.speed * frameFactor;
+    this.pulse += 0.05 * frameFactor;
+    if (this.flashTimer > 0) this.flashTimer -= frameFactor;
   }
 
   draw() {

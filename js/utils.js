@@ -1,3 +1,15 @@
+let frameFactor = 1;
+let _lastTime = 0;
+
+function calcDt(timestamp) {
+  if (!_lastTime || !timestamp) {
+    frameFactor = 1;
+  } else {
+    frameFactor = Math.min((timestamp - _lastTime) / (1000 / 60), 6);
+  }
+  _lastTime = timestamp || performance.now();
+}
+
 function crossTimeToSpeed(crossTimeSec) {
   const playH = H - S.removeZone;
   return playH / (crossTimeSec * 60);
@@ -191,7 +203,7 @@ function drawGrid() {
   ctx.strokeStyle = CONFIG.colors.primaryGrid;
   ctx.lineWidth = 1;
   const gridSize = S.gridSize;
-  bgOffset = (bgOffset + S.gridSpeed) % gridSize;
+  bgOffset = (bgOffset + S.gridSpeed * frameFactor) % gridSize;
   for (let x = 0; x <= W; x += gridSize) {
     ctx.beginPath();
     ctx.moveTo(x, 0);

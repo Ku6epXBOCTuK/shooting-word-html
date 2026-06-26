@@ -10,9 +10,9 @@ class Particle {
     this.size = S.particleSizeMin + Math.random() * (S.particleSizeMax - S.particleSizeMin);
   }
   update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.life -= this.decay;
+    this.x += this.vx * frameFactor;
+    this.y += this.vy * frameFactor;
+    this.life -= this.decay * frameFactor;
     this.vx *= S.particleDamping;
     this.vy *= S.particleDamping;
   }
