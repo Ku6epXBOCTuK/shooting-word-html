@@ -1,0 +1,17 @@
+{
+  "name": "shooting-word",
+  "version": "0.1.0",
+  "description": "Twitch-интерактивная игра, где зрители чата стреляют по врагам, печатая слова.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.20.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module"
+}
