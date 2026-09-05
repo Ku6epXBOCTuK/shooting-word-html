@@ -14,18 +14,18 @@ Shooting Word — это browser-source виджет для стримов, пр
 
 ## Типы врагов
 
-| Тип         | Описание                                      | Очки |
-| ----------- | --------------------------------------------- | ---- |
-| **Обычный** | Одно слово (hack, code, data, git...)         | 10   |
-| **Тяжёлый** | Два слова подряд (fire wall, null pointer...) | 50   |
-| **Босс**    | 3 слоя по 3 слова, появляется каждые 10 волн  | 200  |
+| Тип         | Описание                                               | Очки |
+| ----------- | ------------------------------------------------------ | ---- |
+| **Обычный** | Одно слово (hack, code, data, git...)                  | 10   |
+| **Тяжёлый** | Два слова-слоя подряд (fire → wall, null → pointer...) | 50   |
+| **Босс**    | 3 слоя по 3 слова, появляется каждые 10 волн           | 200  |
 
-Слова — IT/хакерская тематика: названия языков, протоколов, уязвимостей, команд терминала.
+Броня отображается и пробивается только по текущему (верхнему) слою. Слова — IT/хакерская тематика: названия языков, протоколов, уязвимостей, команд терминала.
 
 ## Возможности
 
 - **Волны** — количество врагов и их скорость растут с каждой волной
-- **Боссы** — multi-phase враги со слоями защиты
+- **Боссы** — multi-layer враги со слоями защиты
 - **Статистика** — таблица лидеров по уничтоженным врагам и «Мазила» за много промахов
 - **Визуальные эффекты** — частицы, трейлы, screen shake, glitch при уроне
 - **Режим single play** — скрытие виджета после одной партии (для автоматизации через Streamer.bot)
@@ -33,10 +33,20 @@ Shooting Word — это browser-source виджет для стримов, пр
 
 ## Установка
 
+### Сборка из исходников
+
+```bash
+pnpm install
+pnpm build     # typecheck + сборка в dist/
+pnpm serve     # локальный сервер на dist/
+```
+
+Для разработки: `pnpm dev` — esbuild watch, пересобирает dist при изменениях в src/.
+
 ### Быстрый старт
 
-1. Открой [страницу настройки](http://ku6epxboctuk.is-a.dev/shooting-word-html/)
-2. Введи имя.twitch канала
+1. Открой [страницу настройки](https://xboctuk.duckdns.org/shooting-word/)
+2. Введи имя twitch канала
 3. Нажми **СКОПИРОВАТЬ ССЫЛКУ**
 4. В OBS: Sources → Browser → вставь ссылку
 5. Рекомендуемая высота — не менее 800px
@@ -44,7 +54,7 @@ Shooting Word — это browser-source виджет для стримов, пр
 ### Прямая ссылка
 
 ```txt
-http://ku6epxboctuk.is-a.dev/shooting-word-html/game.html?channel=ИМЯ_КАНАЛА
+https://xboctuk.duckdns.org/shooting-word/game.html?channel=ИМЯ_КАНАЛА
 ```
 
 ### Параметры URL
@@ -61,41 +71,45 @@ http://ku6epxboctuk.is-a.dev/shooting-word-html/game.html?channel=ИМЯ_КАН�
 
 ## Технологии
 
-- Vanilla JavaScript (ES6+), без фреймворков и сборщиков
-- Canvas 2D для рендеринга
+- TypeScript (strict), сборка esbuild
+- [PixiJS v8](https://pixijs.com/) для рендера (WebGL/WebGPU)
+- [miniplex](https://github.com/hmans/miniplex) — ECS-ядро
 - [TMI.js](https://github.com/tmijs/tmi.js) для подключения к Twitch IRC
-- Один HTML-файл + CSS + JS модули
 - Хостится на GitHub Pages
+
+Архитектура описана в [ecs-refactoring.md](ecs-refactoring.md): ввод отделён интерфейсом
+`InputSource` (переход на Twurple и запуск через баллы канала = новый источник без правок
+игры), логика отделена от рендера, сущности и системы — на miniplex.
 
 ## Структура проекта
 
 ```txt
-├── index.html          # Страница настройки (выбор канала)
-├── game.html           # Игровой экран
-├── style.css           # Стили ( cyberpunk-тема: чёрный фон, зелёный неон)
-├── js/
-│   ├── config.js       # Конфигурация и словарь слов
-│   ├── game.js         # Основной игровой цикл
-│   ├── enemy.js        # Класс врага (обычный / тяжёлый / босс)
-│   ├── projectile.js   # Снаряды
-│   ├── particle.js     # Система частиц
-│   ├── input.js        # Обработка ввода (чат + локальный)
-│   ├── intro.js        # Заставка
-│   ├── utils.js        # Утилиты
-│   ├── main.js         # Точка входа
-│   └── tmi.min.js      # Twitch Messaging Interface
+├── index.html            # Страница настройки (выбор канала)
+├── game.html             # Игровой экран
+├── style.css             # Стили (cyberpunk-тема: чёрный фон, зелёный неон)
+├── build.js              # esbuild-сборка двух бандлов + копирование статики в dist/
+├── src/
+│   ├── entries/          # Точки входа: game.ts (игра), index.ts (настройки)
+│   ├── app/              # GameApp — сборка приложения, фазы, такт
+│   ├── config/           # gameConfig.ts (константы), words.ts (словарь слов)
+│   ├── core/             # Шина событий, игровой цикл, метрики, измеритель текста
+│   ├── ecs/              # Компоненты, мир miniplex, спавн-функции
+│   ├── systems/          # Системы: волны, fuse, наведение, интеграция, побег, lifetime
+│   ├── game/             # Simulation (урон/оркестрация), GameStore, события, статистика
+│   ├── input/            # InputSource-интерфейс, роутер, источники: tmi.js + клавиатура
+│   ├── render/           # Pixi: сетка, частицы, враги, снаряды, баннер, интро
+│   └── ui/               # DOM: HUD, экраны, статистика, фидбек ввода, скейлинг
 ├── img/
-│   └── sprite.svg      # Иконки (GitHub, Twitch)
-└── LICENSE             # MIT
+│   └── sprite.svg        # Иконки (GitHub, Twitch)
+└── LICENSE               # MIT
 ```
 
 ## Добавление своих слов
 
-Отредактируй `js/config.js`:
+Отредактируй `src/config/words.ts`:
 
-WordGenerator.simpleWords - простые враги из одного слова
-
-WordGenerator.heavyWords - бронированные враги - два слова
+- `SIMPLE_WORDS` — простые враги из одного слова
+- `HEAVY_WORDS` — бронированные враги: пары слов, каждое слово — отдельный слой брони
 
 ## Лицензия
 
@@ -103,10 +117,9 @@ MIT
 
 ## Связь
 
-- [GitHub Issues](https://github.com/Ku6epXBOCTuK/shooting-word-html/issues) — баги и идеи
-- [Twitch](https://www.twitch.tv/ku6ep_xboctuk) — смотри игру в действии
+- [Обратная связь - telegram chat](https://t.me/Ku6epXBOCTuK_chat) — баги и идеи
+- [Twitch](https://www.twitch.tv/ku6epxboctuk) — смотри игру в действии
 
 ## Похожие проекты
 
-Этот репозиторий не будет активно развиваться. В дальнейшем функционал станет частью проекта [multi-widget](https://github.com/Ku6epXBOCTuK/multi-widget).
-Пока что ожидается перенос на sveltekit + miniplex ecs и возможно pixi.js\konva
+Этот репозиторий не будет активно развиваться. В дальнейшем функционал станет частью проекта более крупного проекта multi-widget
