@@ -410,6 +410,10 @@ body {
   fill: currentColor;
   flex-shrink: 0;
 }
+.link-icon-v2 {
+  width: 32px;
+  height: 32px;
+}
 .page-link:hover {
   opacity: 1;
   text-shadow: 0 0 16px #00ff41;

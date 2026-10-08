@@ -6,7 +6,7 @@ function main(
   singlePlayEl: HTMLInputElement,
 ): void {
   function buildUrl(): string {
-    const name = input.value.trim().toLowerCase() || 'Ku6ep_XBOCTuK'
+    const name = input.value.trim().toLowerCase() || 'Ku6epXBOCTuK'
     const single = singlePlayEl.checked ? '1' : '0'
     return `${location.origin}${location.pathname.replace(/\/[^/]*$/, '/')}game?channel=${encodeURIComponent(name)}&singlePlay=${single}`
   }

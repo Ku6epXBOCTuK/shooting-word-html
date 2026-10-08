@@ -29,7 +29,7 @@ export type GameSettings = {
 export async function bootstrapGame(canvas: HTMLCanvasElement): Promise<void> {
   const params = new URLSearchParams(window.location.search)
   const settings: GameSettings = {
-    channel: params.get('channel') || 'ku6ep_xboctuk',
+    channel: params.get('channel') || 'ku6epxboctuk',
     singlePlay: params.get('singlePlay') === '1',
   }
 
